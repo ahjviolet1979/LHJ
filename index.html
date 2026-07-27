@@ -109,6 +109,7 @@
   }
   .item .tm{ font-weight:700; font-size:8px; display:block; opacity:.95; }
   .item .nm{ font-family:'Jua', sans-serif; font-size:9px; display:block; }
+  .item .dep{ display:block; font-size:7px; opacity:.92; margin-top:1px; }
 
   .item.cancelled{
     background:#EEF1F4 !important; color:var(--cancel);
@@ -397,14 +398,17 @@ weeks.forEach(week=>{
 
     d.acts.forEach(a=>{
       const top = ((a.h-START_HOUR)*60 + a.m) * MM_PER_MIN;
-      const height = Math.max(a.dur*MM_PER_MIN, 11);
+      const height = Math.max(a.dur*MM_PER_MIN, 14);
       const block = document.createElement('div');
       block.className = 'item' + (a.status!=='normal' ? ' '+a.status : '');
       block.style.top = top+'mm';
       block.style.height = height+'mm';
-      if(a.status==='normal') block.style.background = `var(${a.color})`;
+      if(a.status==='normal' || a.status==='conflict') block.style.background = `var(${a.color})`;
       const warn = a.status==='conflict' ? `<span class="warn">⚠️ ${a.note}</span>` : (a.status==='cancelled' ? ` ${a.note}` : '');
-      block.innerHTML = `<span class="tm">${a.icon} ${fmt(a.h,a.m)}~${fmt(Math.floor((a.h*60+a.m+a.dur)/60), (a.h*60+a.m+a.dur)%60)}</span><span class="nm">${a.name}</span>${warn}`;
+      const departTotal = a.h*60+a.m-20;
+      const dh = Math.floor(departTotal/60), dm = ((departTotal%60)+60)%60;
+      const departHtml = (a.name.includes("문해길") || a.status==='cancelled') ? '' : `<span class="dep">🚪 ${fmt(dh,dm)} 출발</span>`;
+      block.innerHTML = `<span class="tm">${a.icon} ${fmt(a.h,a.m)}~${fmt(Math.floor((a.h*60+a.m+a.dur)/60), (a.h*60+a.m+a.dur)%60)}</span><span class="nm">${a.name}</span>${departHtml}${warn}`;
       col.appendChild(block);
     });
 
