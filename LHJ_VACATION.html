@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>호준이 여름방학 주간 캘린더</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B3358;
+    --sub:#5C7695;
+    --line:#D9E9F5;
+    --taekwondo:#FF6B35;
+    --english:#3B82C4;
+    --school-sport:#43A047;
+    --acro:#9C6ADE;
+    --swim:#17B8C4;
+    --jump:#FF9F43;
+    --reading:#8B5E3C;
+    --cancel:#9AA5B1;
+    --conflict:#E8443B;
+    --travel:#FFF4D6;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Gowun Dodum', sans-serif;
+    color:var(--ink);
+    background:#EAF3FA;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  .week-page{
+    width:277mm;
+    margin:10mm auto;
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 4px 18px rgba(27,51,88,0.12);
+    padding:12mm 12mm 8mm;
+    page-break-after:always;
+  }
+  .week-page:last-child{ page-break-after:auto; }
+
+  .top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:6px;
+    margin-bottom:8px;
+  }
+  .top h1{ font-family:'Jua', sans-serif; font-size:22px; }
+  .top .range{ font-size:13px; color:var(--sub); }
+
+  .callout{
+    background:var(--travel);
+    border:2px dashed #E0A800;
+    border-radius:9px;
+    padding:6px 10px;
+    font-size:11.5px;
+    line-height:1.5;
+    margin-bottom:7px;
+  }
+  .callout b{ color:#8A5A00; }
+
+  .board{
+    display:grid;
+    grid-template-columns:14mm repeat(var(--ndays,7), 1fr);
+  }
+  .corner{}
+  .daycol-head{
+    font-family:'Jua', sans-serif;
+    text-align:center;
+    padding:3px 0 6px;
+    font-size:13px;
+  }
+  .daycol-head .ddate{
+    display:block;
+    font-family:'Gowun Dodum', sans-serif;
+    font-size:10.5px;
+    color:var(--sub);
+    font-weight:400;
+  }
+  .daycol-head.today{ color:#B9750A; }
+  .today-tag{
+    display:block;
+    background:#FFB800; color:#fff;
+    font-size:8.5px; border-radius:8px;
+    padding:0px 5px; margin-top:1px;
+    font-family:'Gowun Dodum', sans-serif;
+  }
+
+  .timeaxis{ position:relative; }
+  .timeaxis .tick{
+    position:absolute; left:0; right:0;
+    font-size:8.5px; color:var(--sub);
+    text-align:right; padding-right:4px;
+    transform:translateY(-6px);
+  }
+  .daycol{ position:relative; border-left:1px solid var(--line); }
+  .daycol.weekend{ background:#FAFCFE; }
+  .hline{ position:absolute; left:0; right:0; border-top:1px dashed var(--line); }
+
+  .item{
+    position:absolute; left:2px; right:2px;
+    border-radius:6px; padding:2px 4px;
+    color:#fff; font-size:8.5px; line-height:1.25;
+    overflow:hidden;
+  }
+  .item .tm{ font-weight:700; font-size:8px; display:block; opacity:.95; }
+  .item .nm{ font-family:'Jua', sans-serif; font-size:9px; display:block; }
+
+  .item.cancelled{
+    background:#EEF1F4 !important; color:var(--cancel);
+    border:1.5px dashed var(--cancel);
+  }
+  .item.cancelled .nm{ text-decoration:line-through; }
+  .item.cancelled .tm{ color:var(--cancel); }
+
+  .item.conflict{ border:2px solid var(--conflict); }
+  .item.conflict .warn{
+    display:block; margin-top:1px; font-size:7.5px;
+    background:#fff; color:var(--conflict); border-radius:4px;
+    padding:0 3px; font-weight:700;
+  }
+
+  .travel-overlay{
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(45deg, rgba(255,184,0,0.10), rgba(255,184,0,0.10) 8px, rgba(255,184,0,0.18) 8px, rgba(255,184,0,0.18) 16px);
+    pointer-events:none;
+  }
+  .travel-tag{
+    position:absolute; top:3px; left:3px; right:3px;
+    text-align:center; font-size:8.5px;
+    background:#FFB800; color:#fff; border-radius:5px;
+    padding:2px 3px; font-family:'Jua', sans-serif;
+    z-index:2;
+  }
+
+  .nowline{
+    position:absolute; left:0; right:0; height:0;
+    border-top:2px solid #E8443B; z-index:5;
+  }
+  .nowline::before{
+    content:"🔴 지금";
+    position:absolute; right:2px; top:-8px;
+    background:#E8443B; color:#fff; font-size:7.5px;
+    padding:0px 4px; border-radius:6px;
+  }
+
+  .legend{
+    display:flex; flex-wrap:wrap; gap:8px;
+    margin-top:6px; font-size:9px; color:var(--sub);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:3px; }
+  .sw{ width:9px; height:9px; border-radius:3px; display:inline-block; }
+
+  @media print{
+    body{ background:#fff; }
+    .week-page{ box-shadow:none; margin:0; border-radius:0; width:100%; }
+  }
+  @page{ size: A4 landscape; margin: 7mm; }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const START_HOUR = 9, END_HOUR = 20;
+const totalMin = (END_HOUR-START_HOUR)*60;
+const AXIS_MM = 150; // timeline height in mm
+const MM_PER_MIN = AXIS_MM/totalMin;
+
+// status: 'normal' | 'cancelled' | 'conflict'
+function act(h,m,dur,name,icon,color,status,note){
+  return {h,m,dur,name,icon,color,status:status||'normal',note:note||''};
+}
+
+const weeks = [
+  {
+    label:"1주차", range:"7월 27일(월) ~ 8월 2일(일)",
+    callout:`📌 <b>영어학원 방학: 7/28(화)~7/31(금)</b> — 이 기간 영어학원 수업 없음&nbsp;&nbsp;|&nbsp;&nbsp;
+             📌 <b>태권도 방학: 7/29(수)~7/31(금)</b> — 이 기간 태권도 수업 없음<br>
+             🚗 <b>7/31(금)부터 시골 방문 시작</b> — 수영·줄넘기는 학원이 정상 운영되니 참석 여부 확인이 필요해요.`,
+    days:[
+      {date:new Date(2026,6,27), dow:"월", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(12,40,80,"학교축구특강","⚽","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+      ]},
+      {date:new Date(2026,6,28), dow:"화", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(11,0,50,"아크로바틱","🤸","--acro"),
+        act(12,40,80,"학교배드민턴특강","🏸","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english","cancelled","방학-쉬는날"),
+      ]},
+      {date:new Date(2026,6,29), dow:"수", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(11,10,50,"학교피구특강","🤾","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo","cancelled","방학-쉬는날"),
+        act(18,0,90,"영어학원","📖","--english","cancelled","방학-쉬는날"),
+      ]},
+      {date:new Date(2026,6,30), dow:"목", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(11,0,50,"아크로바틱","🤸","--acro"),
+        act(12,30,50,"피구","🤾","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo","cancelled","방학-쉬는날"),
+        act(18,0,90,"영어학원","📖","--english","cancelled","방학-쉬는날"),
+      ]},
+      {date:new Date(2026,6,31), dow:"금", travel:"🚗 시골 방문 시작", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading","cancelled","이동일정 확인"),
+        act(15,0,60,"태권도","🥋","--taekwondo","cancelled","방학-쉬는날"),
+        act(17,0,60,"수영","🏊","--swim","conflict","여행중-확인필요"),
+        act(19,0,60,"줄넘기","🤾‍♂️","--jump","conflict","여행중-확인필요"),
+      ]},
+      {date:new Date(2026,7,1), dow:"토", weekend:true, travel:"🚗 시골 방문 중", acts:[]},
+      {date:new Date(2026,7,2), dow:"일", weekend:true, travel:"🚗 시골 방문 중", acts:[]},
+    ]
+  },
+  {
+    label:"2주차", range:"8월 3일(월) ~ 8월 9일(일)",
+    callout:`🚗 <b>8/3(월)까지 시골 방문</b> — 영어학원·태권도 방학은 7/31에 끝나 8/3은 정상 수업이에요.
+             ⚠️ <b>8/3(월) 학교축구특강 · 태권도 · 영어학원</b> 모두 귀가 일정과 겹쳐 참석 확인이 필요해요.`,
+    days:[
+      {date:new Date(2026,7,3), dow:"월", travel:"🚗 시골에서 귀가", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading","cancelled","이동일정 확인"),
+        act(12,40,80,"학교축구특강","⚽","--school-sport","conflict","여행중-확인필요"),
+        act(15,0,60,"태권도","🥋","--taekwondo","conflict","여행중-확인필요"),
+        act(18,0,90,"영어학원","📖","--english","conflict","여행중-확인필요"),
+      ]},
+      {date:new Date(2026,7,4), dow:"화", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(11,0,50,"아크로바틱","🤸","--acro"),
+        act(12,40,80,"학교배드민턴특강","🏸","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+      ]},
+      {date:new Date(2026,7,5), dow:"수", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(11,10,50,"학교피구특강","🤾","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+      ]},
+      {date:new Date(2026,7,6), dow:"목", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(11,0,50,"아크로바틱","🤸","--acro"),
+        act(12,30,50,"피구","🤾","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+      ]},
+      {date:new Date(2026,7,7), dow:"금", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(17,0,60,"수영","🏊","--swim"),
+        act(19,0,60,"줄넘기","🤾‍♂️","--jump"),
+      ]},
+      {date:new Date(2026,7,8), dow:"토", weekend:true, acts:[]},
+      {date:new Date(2026,7,9), dow:"일", weekend:true, acts:[]},
+    ]
+  },
+  {
+    label:"3주차", range:"8월 10일(월) ~ 8월 16일(일)",
+    callout:"",
+    days:[
+      {date:new Date(2026,7,10), dow:"월", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(12,40,80,"학교축구특강","⚽","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+      ]},
+      {date:new Date(2026,7,11), dow:"화", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(11,0,50,"아크로바틱","🤸","--acro"),
+        act(12,40,80,"학교배드민턴특강","🏸","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+      ]},
+      {date:new Date(2026,7,12), dow:"수", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(11,10,50,"학교피구특강","🤾","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+      ]},
+      {date:new Date(2026,7,13), dow:"목", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(11,0,50,"아크로바틱","🤸","--acro"),
+        act(12,30,50,"피구","🤾","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+      ]},
+      {date:new Date(2026,7,14), dow:"금", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(17,0,60,"수영","🏊","--swim"),
+        act(19,0,60,"줄넘기","🤾‍♂️","--jump"),
+      ]},
+      {date:new Date(2026,7,15), dow:"토", weekend:true, acts:[]},
+      {date:new Date(2026,7,16), dow:"일", weekend:true, acts:[]},
+    ]
+  },
+  {
+    label:"4주차 (마지막주)", range:"8월 17일(월) ~ 8월 19일(수) 개학",
+    callout:`🎒 <b>8월 19일(수) 개학!</b> 방학 마지막 주예요.`,
+    ndays:3,
+    days:[
+      {date:new Date(2026,7,17), dow:"월", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(12,40,80,"학교축구특강","⚽","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+      ]},
+      {date:new Date(2026,7,18), dow:"화", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(11,0,50,"아크로바틱","🤸","--acro"),
+        act(12,40,80,"학교배드민턴특강","🏸","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+      ]},
+      {date:new Date(2026,7,19), dow:"수", travel:"🎒 개학일", acts:[]},
+    ]
+  },
+];
+
+function fmt(h,m){ return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); }
+function sameDate(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+const app = document.getElementById('app');
+const now = new Date();
+
+weeks.forEach(week=>{
+  const ndays = week.ndays || 7;
+  const page = document.createElement('div');
+  page.className = 'week-page';
+
+  page.innerHTML = `
+    <div class="top">
+      <h1>🗓️ 호준이 여름방학 캘린더 — ${week.label}</h1>
+      <div class="range">${week.range}</div>
+    </div>
+    ${week.callout ? `<div class="callout">${week.callout}</div>` : ''}
+    <div class="board" style="--ndays:${ndays}">
+      <div class="corner"></div>
+      ${week.days.map(d=>{
+        const isToday = sameDate(d.date, now);
+        return `<div class="daycol-head ${isToday?'today':''}">${d.dow}
+          <span class="ddate">${d.date.getMonth()+1}/${d.date.getDate()}</span>
+          ${isToday?'<span class="today-tag">오늘</span>':''}
+        </div>`;
+      }).join('')}
+      <div class="timeaxis" id="ax-${week.label}"></div>
+      ${week.days.map((d,i)=>`<div class="daycol ${d.weekend?'weekend':''}" id="col-${week.label}-${i}" style="height:${AXIS_MM}mm"></div>`).join('')}
+    </div>
+    <div class="legend">
+      <span><span class="sw" style="background:var(--reading)"></span>문해길/수학/책읽기</span>
+      <span><span class="sw" style="background:var(--taekwondo)"></span>태권도</span>
+      <span><span class="sw" style="background:var(--english)"></span>영어학원</span>
+      <span><span class="sw" style="background:var(--school-sport)"></span>학교 스포츠특강 / 피구</span>
+      <span><span class="sw" style="background:var(--acro)"></span>아크로바틱</span>
+      <span><span class="sw" style="background:var(--swim)"></span>수영</span>
+      <span><span class="sw" style="background:var(--jump)"></span>줄넘기</span>
+      <span><span class="sw" style="background:var(--cancel)"></span>방학(쉬는 날)</span>
+      <span><span class="sw" style="background:var(--conflict)"></span>여행과 겹침</span>
+    </div>
+  `;
+  app.appendChild(page);
+
+  const axis = document.getElementById('ax-'+week.label);
+  axis.style.height = AXIS_MM+'mm';
+  for(let h=START_HOUR; h<=END_HOUR; h++){
+    const top = (h-START_HOUR)*60*MM_PER_MIN;
+    const tick = document.createElement('div');
+    tick.className='tick';
+    tick.style.top = top+'mm';
+    tick.textContent = h+'시';
+    axis.appendChild(tick);
+    week.days.forEach((d,i)=>{
+      const col = document.getElementById(`col-${week.label}-${i}`);
+      const line = document.createElement('div');
+      line.className='hline';
+      line.style.top = top+'mm';
+      col.appendChild(line);
+    });
+  }
+
+  week.days.forEach((d,i)=>{
+    const col = document.getElementById(`col-${week.label}-${i}`);
+
+    if(d.travel){
+      const ov = document.createElement('div');
+      ov.className='travel-overlay';
+      col.appendChild(ov);
+      const tag = document.createElement('div');
+      tag.className='travel-tag';
+      tag.textContent = d.travel;
+      col.appendChild(tag);
+    }
+
+    d.acts.forEach(a=>{
+      const top = ((a.h-START_HOUR)*60 + a.m) * MM_PER_MIN;
+      const height = Math.max(a.dur*MM_PER_MIN, 11);
+      const block = document.createElement('div');
+      block.className = 'item' + (a.status!=='normal' ? ' '+a.status : '');
+      block.style.top = top+'mm';
+      block.style.height = height+'mm';
+      if(a.status==='normal') block.style.background = `var(${a.color})`;
+      const warn = a.status==='conflict' ? `<span class="warn">⚠️ ${a.note}</span>` : (a.status==='cancelled' ? ` ${a.note}` : '');
+      block.innerHTML = `<span class="tm">${a.icon} ${fmt(a.h,a.m)}~${fmt(Math.floor((a.h*60+a.m+a.dur)/60), (a.h*60+a.m+a.dur)%60)}</span><span class="nm">${a.name}</span>${warn}`;
+      col.appendChild(block);
+    });
+
+    if(sameDate(d.date, now)){
+      const nowMin = (now.getHours()-START_HOUR)*60 + now.getMinutes();
+      if(nowMin>=0 && nowMin<=totalMin){
+        const nl = document.createElement('div');
+        nl.className='nowline';
+        nl.style.top = (nowMin*MM_PER_MIN)+'mm';
+        col.appendChild(nl);
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>
