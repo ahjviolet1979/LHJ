@@ -36,7 +36,7 @@
     background:#fff;
     border-radius:14px;
     box-shadow:0 4px 18px rgba(27,51,88,0.12);
-    padding:12mm 12mm 8mm;
+    padding:8mm 10mm 6mm;
     page-break-after:always;
   }
   .week-page:last-child{ page-break-after:auto; }
@@ -49,35 +49,35 @@
     padding-bottom:6px;
     margin-bottom:8px;
   }
-  .top h1{ font-family:'Jua', sans-serif; font-size:22px; }
+  .top h1{ font-family:'Jua', sans-serif; font-size:20px; }
   .top .range{ font-size:13px; color:var(--sub); }
 
   .callout{
     background:var(--travel);
     border:2px dashed #E0A800;
     border-radius:9px;
-    padding:6px 10px;
-    font-size:11.5px;
-    line-height:1.5;
-    margin-bottom:7px;
+    padding:5px 10px;
+    font-size:12px;
+    line-height:1.45;
+    margin-bottom:6px;
   }
   .callout b{ color:#8A5A00; }
 
   .board{
     display:grid;
-    grid-template-columns:14mm repeat(var(--ndays,7), 1fr);
+    grid-template-columns:16mm repeat(var(--ndays,7), 1fr);
   }
   .corner{}
   .daycol-head{
     font-family:'Jua', sans-serif;
     text-align:center;
-    padding:3px 0 6px;
-    font-size:13px;
+    padding:3px 0 5px;
+    font-size:17px;
   }
   .daycol-head .ddate{
     display:block;
     font-family:'Gowun Dodum', sans-serif;
-    font-size:10.5px;
+    font-size:12.5px;
     color:var(--sub);
     font-weight:400;
   }
@@ -85,17 +85,24 @@
   .today-tag{
     display:block;
     background:#FFB800; color:#fff;
-    font-size:8.5px; border-radius:8px;
-    padding:0px 5px; margin-top:1px;
+    font-size:10.5px; border-radius:8px;
+    padding:0px 6px; margin-top:1px;
+    font-family:'Gowun Dodum', sans-serif;
+  }
+  .head-travel-tag{
+    display:block;
+    background:#FFB800; color:#fff;
+    font-size:10px; border-radius:7px;
+    padding:1px 4px; margin-top:2px;
     font-family:'Gowun Dodum', sans-serif;
   }
 
   .timeaxis{ position:relative; }
   .timeaxis .tick{
     position:absolute; left:0; right:0;
-    font-size:8.5px; color:var(--sub);
+    font-size:11px; color:var(--sub);
     text-align:right; padding-right:4px;
-    transform:translateY(-6px);
+    transform:translateY(-7px);
   }
   .daycol{ position:relative; border-left:1px solid var(--line); }
   .daycol.weekend{ background:#FAFCFE; }
@@ -103,39 +110,34 @@
 
   .item{
     position:absolute; left:2px; right:2px;
-    border-radius:6px; padding:2px 4px;
-    color:#fff; font-size:8.5px; line-height:1.25;
+    border-radius:5px; padding:2px 5px;
+    color:var(--ink); font-size:9.5px; line-height:1.2;
     overflow:hidden;
+    border-left:4px solid var(--c);
+    background:color-mix(in srgb, var(--c) 20%, white);
   }
-  .item .tm{ font-weight:700; font-size:8px; display:block; opacity:.95; }
-  .item .nm{ font-family:'Jua', sans-serif; font-size:9px; display:block; }
-  .item .dep{ display:block; font-size:7px; opacity:.92; margin-top:1px; }
+  .item .tm{ font-weight:700; font-size:9px; display:block; opacity:.85; }
+  .item .nm{ font-family:'Jua', sans-serif; font-size:11.5px; display:block; }
+  .item .dep{ display:block; font-size:8.5px; opacity:.85; margin-top:1px; }
 
   .item.cancelled{
     background:#EEF1F4 !important; color:var(--cancel);
-    border:1.5px dashed var(--cancel);
+    border-left:5px dashed var(--cancel);
   }
   .item.cancelled .nm{ text-decoration:line-through; }
   .item.cancelled .tm{ color:var(--cancel); }
 
-  .item.conflict{ border:2px solid var(--conflict); }
+  .item.conflict{ outline:2.5px solid var(--conflict); outline-offset:-1px; }
   .item.conflict .warn{
-    display:block; margin-top:1px; font-size:7.5px;
-    background:#fff; color:var(--conflict); border-radius:4px;
-    padding:0 3px; font-weight:700;
+    display:block; margin-top:2px; font-size:10px;
+    background:var(--conflict); color:#fff; border-radius:4px;
+    padding:1px 4px; font-weight:700;
   }
 
   .travel-overlay{
     position:absolute; inset:0;
-    background:repeating-linear-gradient(45deg, rgba(255,184,0,0.10), rgba(255,184,0,0.10) 8px, rgba(255,184,0,0.18) 8px, rgba(255,184,0,0.18) 16px);
+    background:repeating-linear-gradient(45deg, rgba(255,184,0,0.08), rgba(255,184,0,0.08) 8px, rgba(255,184,0,0.14) 8px, rgba(255,184,0,0.14) 16px);
     pointer-events:none;
-  }
-  .travel-tag{
-    position:absolute; top:3px; left:3px; right:3px;
-    text-align:center; font-size:8.5px;
-    background:#FFB800; color:#fff; border-radius:5px;
-    padding:2px 3px; font-family:'Jua', sans-serif;
-    z-index:2;
   }
 
   .nowline{
@@ -144,17 +146,17 @@
   }
   .nowline::before{
     content:"🔴 지금";
-    position:absolute; right:2px; top:-8px;
-    background:#E8443B; color:#fff; font-size:7.5px;
-    padding:0px 4px; border-radius:6px;
+    position:absolute; right:2px; top:-9px;
+    background:#E8443B; color:#fff; font-size:9px;
+    padding:0px 5px; border-radius:6px;
   }
 
   .legend{
-    display:flex; flex-wrap:wrap; gap:8px;
-    margin-top:6px; font-size:9px; color:var(--sub);
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin-top:6px; font-size:11px; color:var(--sub);
   }
   .legend span{ display:inline-flex; align-items:center; gap:3px; }
-  .sw{ width:9px; height:9px; border-radius:3px; display:inline-block; }
+  .sw{ width:11px; height:11px; border-radius:3px; display:inline-block; }
 
   @media print{
     body{ background:#fff; }
@@ -168,10 +170,11 @@
 <div id="app"></div>
 
 <script>
-const START_HOUR = 9, END_HOUR = 20;
+const START_HOUR = 9, END_HOUR = 21;
 const totalMin = (END_HOUR-START_HOUR)*60;
-const AXIS_MM = 150; // timeline height in mm
-const MM_PER_MIN = AXIS_MM/totalMin;
+const AXIS_BUFFER_MIN = 35; // extra blank space below the last hour line so late blocks aren't flush against the edge
+const AXIS_MM = 122; // timeline height in mm
+const MM_PER_MIN = AXIS_MM/(totalMin+AXIS_BUFFER_MIN);
 
 // status: 'normal' | 'cancelled' | 'conflict'
 function act(h,m,dur,name,icon,color,status,note){
@@ -184,7 +187,7 @@ const weeks = [
     ndays:5,
     callout:`📌 <b>영어학원 방학: 7/28(화)~7/31(금)</b> — 이 기간 영어학원 수업 없음&nbsp;&nbsp;|&nbsp;&nbsp;
              📌 <b>태권도 방학: 7/29(수)~7/31(금)</b> — 이 기간 태권도 수업 없음<br>
-             🚗 <b>7/31(금)부터 시골 방문 시작</b> — 수영·줄넘기는 학원이 정상 운영되니 참석 여부 확인이 필요해요.`,
+             🚗 <b>7/31(금)부터 시골 방문 시작</b> — 수영은 취소(8/3·8/4 저녁 보강), 줄넘기는 시골여행으로 불참해요.`,
     days:[
       {date:new Date(2026,6,27), dow:"월", acts:[
         act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
@@ -215,22 +218,23 @@ const weeks = [
       {date:new Date(2026,6,31), dow:"금", travel:"🚗 시골 방문 시작", acts:[
         act(9,0,60,"문해길/수학/책읽기","📚","--reading","cancelled","이동일정 확인"),
         act(15,0,60,"태권도","🥋","--taekwondo","cancelled","방학-쉬는날"),
-        act(17,0,60,"수영","🏊","--swim","conflict","여행중-확인필요"),
-        act(19,0,60,"줄넘기","🤾‍♂️","--jump","conflict","여행중-확인필요"),
+        act(17,0,60,"수영","🏊","--swim","cancelled","수업 취소(8/3·8/4 보강)"),
+        act(19,0,60,"줄넘기","🤾‍♂️","--jump","cancelled","시골여행으로 불참"),
       ]},
     ]
   },
   {
     label:"2주차", range:"8월 3일(월) ~ 8월 7일(금)",
     ndays:5,
-    callout:`🚗 <b>8/3(월)까지 시골 방문</b> — 영어학원·태권도 방학은 7/31에 끝나 8/3은 정상 수업이에요.
-             ⚠️ <b>8/3(월) 학교축구특강 · 태권도 · 영어학원</b> 모두 귀가 일정과 겹쳐 참석 확인이 필요해요.`,
+    callout:`🚗 <b>8/3(월)에 시골에서 귀가</b> — 이날 모든 수업 정상 참석해요.<br>
+             🏊 <b>수영 보강: 8/3(월)·8/4(화) 저녁 20:00~21:00</b> — 7/31(금) 취소된 수영 대신 진행돼요.`,
     days:[
       {date:new Date(2026,7,3), dow:"월", travel:"🚗 시골에서 귀가", acts:[
-        act(9,0,60,"문해길/수학/책읽기","📚","--reading","cancelled","이동일정 확인"),
-        act(12,40,80,"학교축구특강","⚽","--school-sport","conflict","여행중-확인필요"),
-        act(15,0,60,"태권도","🥋","--taekwondo","conflict","여행중-확인필요"),
-        act(18,0,90,"영어학원","📖","--english","conflict","여행중-확인필요"),
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(12,40,80,"학교축구특강","⚽","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+        act(20,0,60,"수영(보강)","🏊","--swim"),
       ]},
       {date:new Date(2026,7,4), dow:"화", acts:[
         act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
@@ -238,6 +242,7 @@ const weeks = [
         act(12,40,80,"학교배드민턴특강","🏸","--school-sport"),
         act(15,0,60,"태권도","🥋","--taekwondo"),
         act(18,0,90,"영어학원","📖","--english"),
+        act(20,0,60,"수영(보강)","🏊","--swim"),
       ]},
       {date:new Date(2026,7,5), dow:"수", acts:[
         act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
@@ -346,6 +351,7 @@ weeks.forEach(week=>{
         return `<div class="daycol-head ${isToday?'today':''}">${d.dow}
           <span class="ddate">${d.date.getMonth()+1}/${d.date.getDate()}</span>
           ${isToday?'<span class="today-tag">오늘</span>':''}
+          ${d.travel?`<span class="head-travel-tag">${d.travel}</span>`:''}
         </div>`;
       }).join('')}
       <div class="timeaxis" id="ax-${week.label}"></div>
@@ -390,20 +396,22 @@ weeks.forEach(week=>{
       const ov = document.createElement('div');
       ov.className='travel-overlay';
       col.appendChild(ov);
-      const tag = document.createElement('div');
-      tag.className='travel-tag';
-      tag.textContent = d.travel;
-      col.appendChild(tag);
     }
 
-    d.acts.forEach(a=>{
+    d.acts.forEach((a,idx)=>{
       const top = ((a.h-START_HOUR)*60 + a.m) * MM_PER_MIN;
-      const height = Math.max(a.dur*MM_PER_MIN, 14);
+      const nextTop = (idx+1 < d.acts.length)
+        ? ((d.acts[idx+1].h-START_HOUR)*60 + d.acts[idx+1].m) * MM_PER_MIN
+        : Infinity;
+      const natural = a.dur*MM_PER_MIN;
+      // height matches the real duration exactly — never extends past its own end time.
+      // only shrinks below natural size if the next event starts before this one would naturally end.
+      const height = Math.min(natural, Math.max(nextTop - top - 1, 6));
       const block = document.createElement('div');
       block.className = 'item' + (a.status!=='normal' ? ' '+a.status : '');
       block.style.top = top+'mm';
       block.style.height = height+'mm';
-      if(a.status==='normal' || a.status==='conflict') block.style.background = `var(${a.color})`;
+      if(a.status!=='cancelled') block.style.setProperty('--c', `var(${a.color})`);
       const warn = a.status==='conflict' ? `<span class="warn">⚠️ ${a.note}</span>` : (a.status==='cancelled' ? ` ${a.note}` : '');
       const departTotal = a.h*60+a.m-20;
       const dh = Math.floor(departTotal/60), dm = ((departTotal%60)+60)%60;
