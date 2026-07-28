@@ -111,14 +111,14 @@
   .item{
     position:absolute; left:2px; right:2px;
     border-radius:5px; padding:2px 5px;
-    color:var(--ink); font-size:9.5px; line-height:1.2;
+    color:var(--ink); font-size:9.5px; line-height:1.18;
     overflow:hidden;
     border-left:4px solid var(--c);
     background:color-mix(in srgb, var(--c) 20%, white);
   }
-  .item .tm{ font-weight:700; font-size:9px; display:block; opacity:.85; }
-  .item .nm{ font-family:'Jua', sans-serif; font-size:11.5px; display:block; }
-  .item .dep{ display:block; font-size:8.5px; opacity:.85; margin-top:1px; }
+  .item .tm{ font-weight:700; font-size:9.5px; display:block; opacity:.9; white-space:nowrap; }
+  .item .tm .dep-inline{ font-weight:400; opacity:.85; margin-left:3px; }
+  .item .nm{ font-family:'Jua', sans-serif; font-size:13px; display:block; margin-top:1px; }
 
   .item.cancelled{
     background:#EEF1F4 !important; color:var(--cancel);
@@ -173,7 +173,7 @@
 const START_HOUR = 9, END_HOUR = 21;
 const totalMin = (END_HOUR-START_HOUR)*60;
 const AXIS_BUFFER_MIN = 35; // extra blank space below the last hour line so late blocks aren't flush against the edge
-const AXIS_MM = 122; // timeline height in mm
+const AXIS_MM = 130; // timeline height in mm
 const MM_PER_MIN = AXIS_MM/(totalMin+AXIS_BUFFER_MIN);
 
 // status: 'normal' | 'cancelled' | 'conflict'
@@ -409,14 +409,15 @@ weeks.forEach(week=>{
       const height = Math.min(natural, Math.max(nextTop - top - 1, 6));
       const block = document.createElement('div');
       block.className = 'item' + (a.status!=='normal' ? ' '+a.status : '');
-      block.style.top = top+'mm';
-      block.style.height = height+'mm';
-      if(a.status!=='cancelled') block.style.setProperty('--c', `var(${a.color})`);
       const warn = a.status==='conflict' ? `<span class="warn">⚠️ ${a.note}</span>` : (a.status==='cancelled' ? ` ${a.note}` : '');
       const departTotal = a.h*60+a.m-20;
       const dh = Math.floor(departTotal/60), dm = ((departTotal%60)+60)%60;
-      const departHtml = (a.name.includes("문해길") || a.status==='cancelled') ? '' : `<span class="dep">🚪 ${fmt(dh,dm)} 출발</span>`;
-      block.innerHTML = `<span class="tm">${a.icon} ${fmt(a.h,a.m)}~${fmt(Math.floor((a.h*60+a.m+a.dur)/60), (a.h*60+a.m+a.dur)%60)}</span><span class="nm">${a.name}</span>${departHtml}${warn}`;
+      const showDep = !a.name.includes("문해길") && a.status!=='cancelled';
+      const depInline = showDep ? `<span class="dep-inline">(${fmt(dh,dm)} 출발)</span>` : '';
+      block.style.top = top+'mm';
+      block.style.height = height+'mm';
+      if(a.status!=='cancelled') block.style.setProperty('--c', `var(${a.color})`);
+      block.innerHTML = `<span class="tm">${a.icon} ${fmt(a.h,a.m)}~${fmt(Math.floor((a.h*60+a.m+a.dur)/60), (a.h*60+a.m+a.dur)%60)}${depInline}</span><span class="nm">${a.name}</span>${warn}`;
       col.appendChild(block);
     });
 
