@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>골프 라운딩 전 9일 운동 계획표</title>
+  <title>Health Plan</title>
   <style>
     * { box-sizing: border-box; }
     :root {
@@ -461,13 +461,11 @@
       </div>
     </section>
 
-    <p class="footer">
-      모바일에서는 날짜별 카드 안에서 오전/오후 운동을 바로 확인하면 됩니다. 체크 상태는 이 브라우저에 저장됩니다.
-    </p>
+    <p class="footer">모바일에서는 날짜별 카드 안에서 오전/오후 운동을 바로 확인하면 됩니다. 체크 상태는 이 브라우저에 저장됩니다.</p>
   </main>
 
   <script>
-    const storageKey = "golf-health-plan-checks-2026-07-30-clean";
+    const storageKey = "health-plan-checks";
     const checks = Array.from(document.querySelectorAll(".check"));
     const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
 
@@ -475,7 +473,6 @@
       const id = `item-${index}`;
       check.checked = Boolean(saved[id]);
       check.closest("li")?.classList.toggle("done", check.checked);
-
       check.addEventListener("change", () => {
         saved[id] = check.checked;
         check.closest("li")?.classList.toggle("done", check.checked);
