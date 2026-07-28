@@ -10,7 +10,7 @@
   :root{
     --ink:#1B3358;
     --sub:#5C7695;
-    --line:#D9E9F5;
+    --line:#93AFC7;
     --taekwondo:#FF6B35;
     --english:#3B82C4;
     --school-sport:#43A047;
@@ -65,7 +65,7 @@
 
   .board{
     display:grid;
-    grid-template-columns:16mm repeat(var(--ndays,7), 1fr);
+    grid-template-columns:20mm repeat(var(--ndays,7), 1fr);
   }
   .corner{}
   .daycol-head{
@@ -100,8 +100,8 @@
   .timeaxis{ position:relative; }
   .timeaxis .tick{
     position:absolute; left:0; right:0;
-    font-size:11px; color:var(--sub);
-    text-align:right; padding-right:4px;
+    font-size:14px; font-weight:700; color:var(--sub);
+    text-align:right; padding-right:5px;
     transform:translateY(-50%);
   }
   .daycol{ position:relative; border-left:1px solid var(--line); }
@@ -110,15 +110,15 @@
 
   .item{
     position:absolute; left:2px; right:2px;
-    border-radius:5px; padding:2px 5px;
-    color:var(--ink); font-size:9.5px; line-height:1.18;
+    border-radius:5px; padding:2px 6px;
+    color:var(--ink); font-size:11.5px; line-height:1.25;
     overflow:hidden;
     border-left:4px solid var(--c);
     background:color-mix(in srgb, var(--c) 20%, white);
   }
-  .item .tm{ font-weight:700; font-size:9.5px; display:block; opacity:.9; white-space:nowrap; }
-  .item .tm .dep-inline{ font-weight:400; opacity:.85; margin-left:3px; }
-  .item .nm{ font-family:'Jua', sans-serif; font-size:13px; display:block; margin-top:1px; }
+  .item .tm{ font-weight:700; font-size:13.5px; display:block; color:var(--ink); opacity:1; white-space:nowrap; }
+  .item .tm .dep-inline{ font-weight:700; color:var(--ink); opacity:1; margin-left:3px; }
+  .item .nm{ font-family:'Jua', sans-serif; font-size:15.5px; display:block; margin-top:2px; }
 
   .item.cancelled{
     background:#EEF1F4 !important; color:var(--cancel);
@@ -173,7 +173,7 @@
 const START_HOUR = 9, END_HOUR = 21;
 const totalMin = (END_HOUR-START_HOUR)*60;
 const AXIS_BUFFER_MIN = 35; // extra blank space below the last hour line so late blocks aren't flush against the edge
-const AXIS_MM = 130; // timeline height in mm
+const AXIS_MM = 172; // timeline height in mm
 const MM_PER_MIN = AXIS_MM/(totalMin+AXIS_BUFFER_MIN);
 
 // status: 'normal' | 'cancelled' | 'conflict'
@@ -305,9 +305,9 @@ const weeks = [
     ]
   },
   {
-    label:"4주차 (마지막주)", range:"8월 17일(월) ~ 8월 19일(수) 개학",
-    callout:`🎒 <b>8월 19일(수) 개학!</b> 방학 마지막 주예요.`,
-    ndays:3,
+    label:"4주차 (마지막주)", range:"8월 17일(월) ~ 8월 20일(목) 개학",
+    callout:`🎒 <b>8월 20일(목) 개학!</b> 방학 마지막 주예요.`,
+    ndays:4,
     days:[
       {date:new Date(2026,7,17), dow:"월", acts:[
         act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
@@ -322,7 +322,13 @@ const weeks = [
         act(15,0,60,"태권도","🥋","--taekwondo"),
         act(18,0,90,"영어학원","📖","--english"),
       ]},
-      {date:new Date(2026,7,19), dow:"수", travel:"🎒 개학일", acts:[]},
+      {date:new Date(2026,7,19), dow:"수", acts:[
+        act(9,0,60,"문해길/수학/책읽기","📚","--reading"),
+        act(11,10,50,"학교피구특강","🤾","--school-sport"),
+        act(15,0,60,"태권도","🥋","--taekwondo"),
+        act(18,0,90,"영어학원","📖","--english"),
+      ]},
+      {date:new Date(2026,7,20), dow:"목", travel:"🎒 개학일", acts:[]},
     ]
   },
 ];
