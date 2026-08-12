@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우리집 주간 스케줄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B3358;
+    --sub:#5C7695;
+    --line:#C9DCEC;
+    --bg:#EAF3FA;
+    --card:#fff;
+    --accent:#FFB800;
+    --danger:#E8443B;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Gowun Dodum', sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    padding:22px 16px 60px;
+  }
+  .wrap{ max-width:1180px; margin:0 auto; }
+
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    margin-bottom:18px;
+  }
+  h1{ font-family:'Jua', sans-serif; font-size:26px; }
+  h1 .sub{ display:block; font-family:'Gowun Dodum', sans-serif; font-size:13px; color:var(--sub); font-weight:400; margin-top:2px;}
+
+  .actions{ display:flex; gap:8px; }
+  button{
+    font-family:'Gowun Dodum', sans-serif; font-size:14px; cursor:pointer;
+    border:none; border-radius:10px; padding:10px 16px;
+    transition:transform .08s ease;
+  }
+  button:active{ transform:scale(0.97); }
+  .btn-primary{ background:var(--accent); color:#fff; font-weight:700; box-shadow:0 3px 8px rgba(255,184,0,0.35); }
+  .btn-ghost{ background:#fff; color:var(--sub); border:1.5px solid var(--line); }
+
+  .legend-colors{
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;
+  }
+  .legend-colors span{
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:12px; color:var(--sub); background:#fff;
+    border-radius:999px; padding:4px 10px; border:1px solid var(--line);
+  }
+  .legend-colors .dot{ width:9px; height:9px; border-radius:50%; }
+
+  .board{
+    background:var(--card);
+    border-radius:18px;
+    box-shadow:0 6px 20px rgba(27,51,88,0.10);
+    padding:18px 14px 22px;
+    overflow-x:auto;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:44px repeat(7, minmax(84px,1fr));
+    min-width:700px;
+  }
+  .corner{}
+  .day-head{
+    text-align:center;
+    padding:2px 4px 10px;
+    position:relative;
+  }
+  .day-head .dname{ font-family:'Jua', sans-serif; font-size:16px; }
+  .day-head .add-btn{
+    width:22px; height:22px; border-radius:50%;
+    background:#F0F5FA; color:var(--sub); border:1px solid var(--line);
+    font-size:14px; line-height:1; padding:0; margin-top:4px;
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .day-head .add-btn:hover{ background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  .timeaxis{ position:relative; }
+  .timeaxis .tick{
+    position:absolute; left:0; right:0;
+    font-size:11px; color:var(--sub);
+    text-align:right; padding-right:6px;
+    transform:translateY(-50%);
+  }
+
+  .daycol{ position:relative; border-left:1px solid var(--line); }
+  .daycol.weekend{ background:#F7FAFD; }
+  .hline{ position:absolute; left:0; right:0; border-top:1px dashed var(--line); }
+  .empty-hint{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    text-align:center; color:#B9C7D6; font-size:12px; padding:8px; pointer-events:none;
+  }
+
+  .item{
+    position:absolute; left:3px; right:3px;
+    border-radius:8px; padding:5px 8px;
+    color:var(--ink); font-size:11.5px; line-height:1.3;
+    overflow:hidden; cursor:pointer;
+    border-left:5px solid var(--c);
+    background:color-mix(in srgb, var(--c) 20%, white);
+    box-shadow:0 1px 3px rgba(27,51,88,0.10);
+    transition:box-shadow .1s ease, transform .1s ease;
+  }
+  .item:hover{ box-shadow:0 3px 10px rgba(27,51,88,0.22); transform:translateY(-1px); }
+  .item .tm{ font-weight:700; font-size:11px; display:block; white-space:nowrap; }
+  .item .nm{ font-family:'Jua', sans-serif; font-size:13.5px; display:block; margin-top:2px; }
+  .item .who{ display:inline-block; margin-top:3px; font-size:10px; background:rgba(27,51,88,0.12); border-radius:6px; padding:1px 6px; }
+  .item .del-x{
+    position:absolute; top:3px; right:4px; width:16px; height:16px; border-radius:50%;
+    background:rgba(255,255,255,0.85); color:var(--danger); font-size:11px; line-height:16px;
+    text-align:center; opacity:0; transition:opacity .1s ease;
+  }
+  .item:hover .del-x{ opacity:1; }
+
+  /* modal */
+  .overlay{
+    position:fixed; inset:0; background:rgba(27,51,88,0.35);
+    display:none; align-items:center; justify-content:center; z-index:50; padding:16px;
+  }
+  .overlay.show{ display:flex; }
+  .modal{
+    background:#fff; border-radius:16px; width:100%; max-width:380px;
+    padding:22px; box-shadow:0 10px 40px rgba(0,0,0,0.25);
+  }
+  .modal h2{ font-family:'Jua', sans-serif; font-size:18px; margin-bottom:14px; }
+  .field{ margin-bottom:12px; }
+  .field label{ display:block; font-size:12.5px; color:var(--sub); margin-bottom:4px; }
+  .field input, .field select{
+    width:100%; padding:9px 10px; border-radius:8px; border:1.5px solid var(--line);
+    font-family:'Gowun Dodum', sans-serif; font-size:14px; color:var(--ink); background:#FAFCFE;
+  }
+  .field-row{ display:flex; gap:8px; }
+  .field-row .field{ flex:1; }
+
+  .day-presets{ display:flex; gap:6px; margin-bottom:8px; }
+  .preset-btn{
+    flex:1; padding:6px 4px; font-size:11.5px; border-radius:7px;
+    background:#F0F5FA; color:var(--sub); border:1px solid var(--line);
+  }
+  .preset-btn:hover{ background:#E4EEF7; }
+  .day-checks{ display:flex; gap:5px; flex-wrap:wrap; }
+  .day-chip{
+    position:relative; cursor:pointer;
+  }
+  .day-chip input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+  .day-chip span{
+    display:flex; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:50%;
+    background:#F0F5FA; border:1.5px solid var(--line); color:var(--sub);
+    font-size:13px; font-family:'Gowun Dodum', sans-serif;
+  }
+  .day-chip input:checked + span{
+    background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700;
+  }
+
+  .who-options{ display:flex; gap:7px; }
+  .who-chip{ position:relative; cursor:pointer; flex:1; }
+  .who-chip input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+  .who-chip span{
+    display:flex; align-items:center; justify-content:center;
+    padding:9px 4px; border-radius:9px;
+    background:#F0F5FA; border:1.5px solid var(--line); color:var(--sub);
+    font-size:13.5px; font-family:'Gowun Dodum', sans-serif;
+  }
+  .who-chip input:checked + span{
+    background:var(--ink); border-color:var(--ink); color:#fff; font-weight:700;
+  }
+  .color-swatches{ display:flex; flex-wrap:wrap; gap:7px; }
+  .swatch{
+    width:26px; height:26px; border-radius:50%; border:2px solid transparent; cursor:pointer;
+  }
+  .swatch.selected{ border-color:var(--ink); transform:scale(1.1); }
+  .modal-actions{ display:flex; gap:8px; margin-top:18px; }
+  .modal-actions button{ flex:1; }
+  .err{ color:var(--danger); font-size:12px; margin-top:6px; display:none; }
+
+  .confirm-modal .modal{ max-width:300px; text-align:center; }
+  .confirm-modal p{ font-size:14px; margin-bottom:6px; }
+  .confirm-modal .target-name{ font-family:'Jua', sans-serif; font-size:16px; margin:8px 0 16px; color:var(--ink); }
+
+  .empty-state{
+    text-align:center; color:var(--sub); font-size:13px; padding:30px 10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>🗓️ 우리집 주간 스케줄
+      <span class="sub">일정을 눌러서 추가하고, 등록된 일정을 눌러서 지워요</span>
+    </h1>
+    <div class="actions">
+      <button class="btn-ghost" id="resetBtn">초기화</button>
+      <button class="btn-primary" id="addBtnMain">＋ 일정 추가</button>
+    </div>
+  </header>
+
+  <div class="board">
+    <div class="grid" id="grid"></div>
+  </div>
+
+</div>
+
+<!-- Add/Edit modal -->
+<div class="overlay" id="addOverlay">
+  <div class="modal">
+    <h2>일정 추가</h2>
+    <div class="field">
+      <label>요일 (여러 개 선택하면 한 번에 반복 등록돼요)</label>
+      <div class="day-presets">
+        <button type="button" class="preset-btn" data-preset="weekday">평일(월~금)</button>
+        <button type="button" class="preset-btn" data-preset="all">매일</button>
+        <button type="button" class="preset-btn" data-preset="clear">선택 해제</button>
+      </div>
+      <div class="day-checks" id="dayChecks">
+        <label class="day-chip"><input type="checkbox" value="0"><span>월</span></label>
+        <label class="day-chip"><input type="checkbox" value="1"><span>화</span></label>
+        <label class="day-chip"><input type="checkbox" value="2"><span>수</span></label>
+        <label class="day-chip"><input type="checkbox" value="3"><span>목</span></label>
+        <label class="day-chip"><input type="checkbox" value="4"><span>금</span></label>
+        <label class="day-chip"><input type="checkbox" value="5"><span>토</span></label>
+        <label class="day-chip"><input type="checkbox" value="6"><span>일</span></label>
+      </div>
+    </div>
+    <div class="field">
+      <label>활동 이름</label>
+      <input type="text" id="f-name" placeholder="예: 피아노 학원">
+    </div>
+    <div class="field">
+      <label>누구 일정인가요</label>
+      <div class="who-options" id="whoOptions">
+        <label class="who-chip"><input type="radio" name="f-who" value="엄마"><span>엄마</span></label>
+        <label class="who-chip"><input type="radio" name="f-who" value="아빠"><span>아빠</span></label>
+        <label class="who-chip"><input type="radio" name="f-who" value="이호준"><span>이호준</span></label>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>시작 시간</label>
+        <input type="time" id="f-start" value="15:00">
+      </div>
+      <div class="field">
+        <label>종료 시간</label>
+        <input type="time" id="f-end" value="16:00">
+      </div>
+    </div>
+    <div class="field">
+      <label>색상</label>
+      <div class="color-swatches" id="colorSwatches"></div>
+    </div>
+    <div class="err" id="formErr">종료 시간은 시작 시간보다 늦어야 해요.</div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="cancelAdd">취소</button>
+      <button class="btn-primary" id="saveAdd">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="overlay confirm-modal" id="delOverlay">
+  <div class="modal">
+    <p>이 일정을 삭제할까요?</p>
+    <div class="target-name" id="delTargetName"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="cancelDel">취소</button>
+      <button class="btn-primary" style="background:var(--danger); box-shadow:none;" id="confirmDel">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- Password gate modal -->
+<div class="overlay confirm-modal" id="pwOverlay">
+  <div class="modal">
+    <p>일정을 추가하려면 비밀번호를 입력하세요</p>
+    <div class="field" style="margin-top:12px; text-align:left;">
+      <input type="password" id="f-password" inputmode="numeric" placeholder="비밀번호">
+    </div>
+    <div class="err" id="pwErr" style="display:none;">비밀번호가 일치하지 않아요.</div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="cancelPw">취소</button>
+      <button class="btn-primary" id="confirmPw">확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DAYS = ["월","화","수","목","금","토","일"];
+const START_HOUR = 8, END_HOUR = 22;
+const TOTAL_MIN = (END_HOUR-START_HOUR)*60;
+const PX_PER_MIN = 1.15;
+const AXIS_PX = TOTAL_MIN*PX_PER_MIN;
+
+const PALETTE = [
+  {key:"orange", hex:"#FF6B35"},
+  {key:"blue",   hex:"#3B82C4"},
+  {key:"green",  hex:"#43A047"},
+  {key:"purple", hex:"#9C6ADE"},
+  {key:"teal",   hex:"#17B8C4"},
+  {key:"amber",  hex:"#FF9F43"},
+  {key:"brown",  hex:"#8B5E3C"},
+  {key:"pink",   hex:"#E85D9A"},
+];
+
+const STORAGE_KEY = "family-weekly-schedule-v1";
+
+function defaultSeed(){
+  return [0,1,2,3].map(day => ({
+    id: uid(), day, name: "영어", who: "이호준",
+    sh:18, sm:0, eh:19, em:20,
+    color:"#3B82C4"
+  }));
+}
+
+function loadEvents(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultSeed();
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : defaultSeed();
+  }catch(e){ return defaultSeed(); }
+}
+function saveEvents(events){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(events)); }catch(e){}
+}
+
+let events = loadEvents();
+let selectedColor = PALETTE[0].hex;
+let pendingDeleteId = null;
+
+function uid(){ return 'e'+Date.now()+Math.random().toString(36).slice(2,7); }
+
+function minutesFromStart(h,m){ return (h-START_HOUR)*60+m; }
+function fmt(h,m){ return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); }
+
+function render(){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  // corner
+  grid.appendChild(document.createElement('div')).className='corner';
+
+  // day headers
+  DAYS.forEach((d,i)=>{
+    const head = document.createElement('div');
+    head.className='day-head';
+    head.innerHTML = `<div class="dname">${d}</div><button class="add-btn" data-day="${i}" title="이 요일에 일정 추가">＋</button>`;
+    grid.appendChild(head);
+  });
+
+  // time axis
+  const axis = document.createElement('div');
+  axis.className='timeaxis';
+  axis.style.height = AXIS_PX+'px';
+  for(let h=START_HOUR; h<=END_HOUR; h++){
+    const tick=document.createElement('div');
+    tick.className='tick';
+    tick.style.top = (h-START_HOUR)*60*PX_PER_MIN+'px';
+    tick.textContent = h+'시';
+    axis.appendChild(tick);
+  }
+  grid.appendChild(axis);
+
+  // day columns
+  DAYS.forEach((d,i)=>{
+    const col = document.createElement('div');
+    col.className='daycol'+((i===5||i===6)?' weekend':'');
+    col.style.height = AXIS_PX+'px';
+    col.dataset.day = i;
+
+    for(let h=START_HOUR; h<=END_HOUR; h++){
+      const line=document.createElement('div');
+      line.className='hline';
+      line.style.top=(h-START_HOUR)*60*PX_PER_MIN+'px';
+      col.appendChild(line);
+    }
+
+    const dayEvents = events.filter(e=>e.day===i).sort((a,b)=> (a.sh*60+a.sm)-(b.sh*60+b.sm));
+
+    if(dayEvents.length===0){
+      const hint=document.createElement('div');
+      hint.className='empty-hint';
+      hint.textContent='일정 없음';
+      col.appendChild(hint);
+    }
+
+    dayEvents.forEach((ev,idx)=>{
+      const top = minutesFromStart(ev.sh, ev.sm)*PX_PER_MIN;
+      const nextTop = idx+1<dayEvents.length ? minutesFromStart(dayEvents[idx+1].sh, dayEvents[idx+1].sm)*PX_PER_MIN : AXIS_PX;
+      const natural = (minutesFromStart(ev.eh,ev.em)-minutesFromStart(ev.sh,ev.sm))*PX_PER_MIN;
+      const height = Math.min(natural, Math.max(nextTop-top-2, 8));
+
+      const block=document.createElement('div');
+      block.className='item';
+      block.style.top=top+'px';
+      block.style.height=height+'px';
+      block.style.setProperty('--c', ev.color);
+      block.innerHTML = `
+        <span class="del-x">✕</span>
+        <span class="tm">${fmt(ev.sh,ev.sm)}~${fmt(ev.eh,ev.em)}</span>
+        <span class="nm">${escapeHtml(ev.name)}</span>
+        ${ev.who ? `<span class="who">${escapeHtml(ev.who)}</span>` : ''}
+      `;
+      block.addEventListener('click', ()=> openDeleteConfirm(ev));
+      col.appendChild(block);
+    });
+
+    grid.appendChild(col);
+  });
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ---------- Add modal ----------
+const addOverlay = document.getElementById('addOverlay');
+function setDayChecks(selectedDays){
+  document.querySelectorAll('#dayChecks input[type=checkbox]').forEach(cb=>{
+    cb.checked = selectedDays.includes(parseInt(cb.value,10));
+  });
+}
+function openAddModal(dayIndex){
+  setDayChecks(dayIndex===undefined || dayIndex===null ? [0] : [dayIndex]);
+  document.getElementById('f-name').value = '';
+  document.querySelectorAll('input[name="f-who"]').forEach(r=>r.checked=false);
+  document.getElementById('f-start').value = '15:00';
+  document.getElementById('f-end').value = '16:00';
+  document.getElementById('formErr').style.display='none';
+  selectedColor = PALETTE[0].hex;
+  renderSwatches();
+  addOverlay.classList.add('show');
+  document.getElementById('f-name').focus();
+}
+function closeAddModal(){ addOverlay.classList.remove('show'); }
+
+function renderSwatches(){
+  const wrap = document.getElementById('colorSwatches');
+  wrap.innerHTML='';
+  PALETTE.forEach(p=>{
+    const s=document.createElement('div');
+    s.className='swatch'+(p.hex===selectedColor?' selected':'');
+    s.style.background=p.hex;
+    s.addEventListener('click', ()=>{ selectedColor=p.hex; renderSwatches(); });
+    wrap.appendChild(s);
+  });
+}
+
+document.getElementById('addBtnMain').addEventListener('click', ()=>requestPassword(0));
+document.getElementById('cancelAdd').addEventListener('click', closeAddModal);
+addOverlay.addEventListener('click', (e)=>{ if(e.target===addOverlay) closeAddModal(); });
+
+document.querySelectorAll('.preset-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const preset = btn.dataset.preset;
+    if(preset==='weekday') setDayChecks([0,1,2,3,4]);
+    else if(preset==='all') setDayChecks([0,1,2,3,4,5,6]);
+    else if(preset==='clear') setDayChecks([]);
+  });
+});
+
+document.getElementById('saveAdd').addEventListener('click', ()=>{
+  const selectedDays = Array.from(document.querySelectorAll('#dayChecks input[type=checkbox]:checked'))
+    .map(cb=>parseInt(cb.value,10));
+  const name = document.getElementById('f-name').value.trim();
+  const whoChecked = document.querySelector('input[name="f-who"]:checked');
+  const who = whoChecked ? whoChecked.value : '';
+  const [sh,sm] = document.getElementById('f-start').value.split(':').map(Number);
+  const [eh,em] = document.getElementById('f-end').value.split(':').map(Number);
+
+  if(selectedDays.length===0){
+    document.getElementById('formErr').textContent='요일을 하나 이상 선택해주세요.';
+    document.getElementById('formErr').style.display='block';
+    return;
+  }
+  if(!name){
+    document.getElementById('formErr').textContent='활동 이름을 입력해주세요.';
+    document.getElementById('formErr').style.display='block';
+    return;
+  }
+  if(!who){
+    document.getElementById('formErr').textContent='누구 일정인지 선택해주세요.';
+    document.getElementById('formErr').style.display='block';
+    return;
+  }
+  if(eh*60+em <= sh*60+sm){
+    document.getElementById('formErr').textContent='종료 시간은 시작 시간보다 늦어야 해요.';
+    document.getElementById('formErr').style.display='block';
+    return;
+  }
+
+  selectedDays.forEach(day=>{
+    events.push({id:uid(), day, name, who, sh, sm, eh, em, color:selectedColor});
+  });
+  saveEvents(events);
+  closeAddModal();
+  render();
+});
+
+document.getElementById('grid').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.add-btn');
+  if(btn){ requestPassword(parseInt(btn.dataset.day,10)); }
+});
+
+// ---------- Password gate ----------
+const PASSWORD = "3515";
+const pwOverlay = document.getElementById('pwOverlay');
+let pendingDayIndex = 0;
+
+function requestPassword(dayIndex){
+  pendingDayIndex = dayIndex;
+  document.getElementById('f-password').value = '';
+  document.getElementById('pwErr').style.display = 'none';
+  pwOverlay.classList.add('show');
+  document.getElementById('f-password').focus();
+}
+function closePasswordModal(){ pwOverlay.classList.remove('show'); }
+
+document.getElementById('cancelPw').addEventListener('click', closePasswordModal);
+pwOverlay.addEventListener('click', (e)=>{ if(e.target===pwOverlay) closePasswordModal(); });
+
+function tryPassword(){
+  const val = document.getElementById('f-password').value;
+  if(val === PASSWORD){
+    closePasswordModal();
+    openAddModal(pendingDayIndex);
+  }else{
+    document.getElementById('pwErr').style.display = 'block';
+    document.getElementById('f-password').value = '';
+    document.getElementById('f-password').focus();
+  }
+}
+document.getElementById('confirmPw').addEventListener('click', tryPassword);
+document.getElementById('f-password').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') tryPassword();
+});
+
+// ---------- Delete modal ----------
+const delOverlay = document.getElementById('delOverlay');
+function openDeleteConfirm(ev){
+  pendingDeleteId = ev.id;
+  document.getElementById('delTargetName').textContent = `${DAYS[ev.day]}요일 · ${ev.name} (${fmt(ev.sh,ev.sm)}~${fmt(ev.eh,ev.em)})`;
+  delOverlay.classList.add('show');
+}
+document.getElementById('cancelDel').addEventListener('click', ()=>{ delOverlay.classList.remove('show'); pendingDeleteId=null; });
+delOverlay.addEventListener('click', (e)=>{ if(e.target===delOverlay){ delOverlay.classList.remove('show'); pendingDeleteId=null; } });
+document.getElementById('confirmDel').addEventListener('click', ()=>{
+  events = events.filter(e=>e.id!==pendingDeleteId);
+  saveEvents(events);
+  delOverlay.classList.remove('show');
+  pendingDeleteId=null;
+  render();
+});
+
+// ---------- Reset ----------
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('모든 일정을 지우고 빈 스케줄로 시작할까요?')){
+    events = [];
+    saveEvents(events);
+    render();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
