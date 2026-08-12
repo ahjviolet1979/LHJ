@@ -79,6 +79,21 @@
     display:inline-flex; align-items:center; justify-content:center;
   }
   .day-head .add-btn:hover{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .day-head.today .dname{ color:#B9750A; }
+  .today-tag{
+    display:inline-block; background:var(--accent); color:#fff;
+    font-size:10.5px; border-radius:8px; padding:1px 8px; margin-top:2px;
+  }
+  .daycol.today-col{ background:rgba(255,184,0,0.06); }
+  .nowline{
+    position:absolute; left:0; right:0; height:0;
+    border-top:2px solid var(--danger); z-index:4; pointer-events:none;
+  }
+  .nowline::before{
+    content:"지금"; position:absolute; right:2px; top:-8px;
+    background:var(--danger); color:#fff; font-size:9px;
+    padding:0 5px; border-radius:6px;
+  }
 
   .timeaxis{ position:relative; }
   .timeaxis .tick{
@@ -341,6 +356,43 @@ function uid(){ return 'e'+Date.now()+Math.random().toString(36).slice(2,7); }
 function minutesFromStart(h,m){ return (h-START_HOUR)*60+m; }
 function fmt(h,m){ return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); }
 
+// Given a day's events (sorted by start time), returns [{ev, col, cols}] where
+// `col` is this event's horizontal slot and `cols` is how many slots its
+// overlap-cluster needs — so concurrent events render side-by-side instead of stacked.
+function layoutOverlaps(sortedEvents){
+  const withRange = sortedEvents.map(ev => ({
+    ev,
+    start: minutesFromStart(ev.sh, ev.sm),
+    end: minutesFromStart(ev.eh, ev.em),
+  }));
+
+  const result = [];
+  let cluster = [];
+  let active = []; // {end, col}
+
+  function flushCluster(){
+    if(cluster.length===0) return;
+    const maxCols = Math.max(...cluster.map(c=>c.col)) + 1;
+    cluster.forEach(c => result.push({ev:c.ev, col:c.col, cols:maxCols}));
+    cluster = [];
+  }
+
+  withRange.forEach(item=>{
+    active = active.filter(a => a.end > item.start);
+    if(active.length===0 && cluster.length>0){
+      flushCluster();
+    }
+    const usedCols = active.map(a=>a.col);
+    let col = 0;
+    while(usedCols.includes(col)) col++;
+    active.push({end:item.end, col});
+    cluster.push({ev:item.ev, col});
+  });
+  flushCluster();
+
+  return result;
+}
+
 function render(){
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
@@ -349,10 +401,13 @@ function render(){
   grid.appendChild(document.createElement('div')).className='corner';
 
   // day headers
+  const todayIdx = (new Date().getDay()+6)%7; // JS getDay: 0=Sun..6=Sat -> convert to 0=Mon..6=Sun
+  const todayDateObj = new Date();
+  const todayDateLabel = `${todayDateObj.getMonth()+1}/${todayDateObj.getDate()}`;
   DAYS.forEach((d,i)=>{
     const head = document.createElement('div');
-    head.className='day-head';
-    head.innerHTML = `<div class="dname">${d}</div><button class="add-btn" data-day="${i}" title="이 요일에 일정 추가">＋</button>`;
+    head.className='day-head'+(i===todayIdx?' today':'');
+    head.innerHTML = `<div class="dname">${d}</div>${i===todayIdx?`<div class="today-tag">오늘 ${todayDateLabel}</div>`:''}<button class="add-btn" data-day="${i}" title="이 요일에 일정 추가">＋</button>`;
     grid.appendChild(head);
   });
 
@@ -372,7 +427,7 @@ function render(){
   // day columns
   DAYS.forEach((d,i)=>{
     const col = document.createElement('div');
-    col.className='daycol'+((i===5||i===6)?' weekend':'');
+    col.className='daycol'+((i===5||i===6)?' weekend':'')+(i===todayIdx?' today-col':'');
     col.style.height = AXIS_PX+'px';
     col.dataset.day = i;
 
@@ -392,16 +447,21 @@ function render(){
       col.appendChild(hint);
     }
 
-    dayEvents.forEach((ev,idx)=>{
+    const laidOut = layoutOverlaps(dayEvents);
+
+    laidOut.forEach(({ev, col: colIdx, cols})=>{
       const top = minutesFromStart(ev.sh, ev.sm)*PX_PER_MIN;
-      const nextTop = idx+1<dayEvents.length ? minutesFromStart(dayEvents[idx+1].sh, dayEvents[idx+1].sm)*PX_PER_MIN : AXIS_PX;
-      const natural = (minutesFromStart(ev.eh,ev.em)-minutesFromStart(ev.sh,ev.sm))*PX_PER_MIN;
-      const height = Math.min(natural, Math.max(nextTop-top-2, 8));
+      const height = Math.max((minutesFromStart(ev.eh,ev.em)-minutesFromStart(ev.sh,ev.sm))*PX_PER_MIN, 8);
+      const widthPct = 100/cols;
+      const leftPct = colIdx*widthPct;
 
       const block=document.createElement('div');
       block.className='item';
       block.style.top=top+'px';
       block.style.height=height+'px';
+      block.style.left = `calc(${leftPct}% + 2px)`;
+      block.style.right = 'auto';
+      block.style.width = `calc(${widthPct}% - 4px)`;
       block.style.setProperty('--c', ev.color);
       block.innerHTML = `
         <span class="del-x">✕</span>
@@ -412,6 +472,17 @@ function render(){
       block.addEventListener('click', ()=> openDeleteConfirm(ev));
       col.appendChild(block);
     });
+
+    if(i===todayIdx){
+      const now = new Date();
+      const nowMin = minutesFromStart(now.getHours(), now.getMinutes());
+      if(nowMin>=0 && nowMin<=TOTAL_MIN){
+        const nl = document.createElement('div');
+        nl.className='nowline';
+        nl.style.top = (nowMin*PX_PER_MIN)+'px';
+        col.appendChild(nl);
+      }
+    }
 
     grid.appendChild(col);
   });
