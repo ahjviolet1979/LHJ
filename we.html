@@ -122,7 +122,8 @@
     transition:box-shadow .1s ease, transform .1s ease;
   }
   .item:hover{ box-shadow:0 3px 10px rgba(27,51,88,0.22); transform:translateY(-1px); }
-  .item .tm{ font-weight:700; font-size:11px; display:block; white-space:nowrap; }
+  .item .tm{ font-weight:700; font-size:11px; display:flex; align-items:center; gap:3px; white-space:nowrap; }
+  .item .tm svg{ display:block; flex-shrink:0; }
   .item .nm{ font-family:'Jua', sans-serif; font-size:13.5px; display:block; margin-top:2px; }
   .item .who{ display:inline-flex; align-items:center; gap:3px; margin-top:3px; font-size:10px; background:rgba(27,51,88,0.12); border-radius:6px; padding:1px 6px 1px 4px; }
   .item .who svg{ display:block; }
@@ -309,10 +310,23 @@
 
 <script>
 const DAYS = ["월","화","수","목","금","토","일"];
-const START_HOUR = 8, END_HOUR = 21;
-const TOTAL_MIN = (END_HOUR-START_HOUR)*60;
-const PX_PER_MIN = 1.15;
-const AXIS_PX = TOTAL_MIN*PX_PER_MIN;
+const DEFAULT_START_HOUR = 8, DEFAULT_END_HOUR = 21;
+const PX_PER_MIN = 0.95;
+let START_HOUR = DEFAULT_START_HOUR, END_HOUR = DEFAULT_END_HOUR;
+let TOTAL_MIN = (END_HOUR-START_HOUR)*60;
+let AXIS_PX = TOTAL_MIN*PX_PER_MIN;
+
+function recalcAxisBounds(){
+  let minH = DEFAULT_START_HOUR, maxH = DEFAULT_END_HOUR;
+  events.forEach(ev=>{
+    minH = Math.min(minH, ev.sh);
+    maxH = Math.max(maxH, ev.em>0 ? ev.eh+1 : ev.eh);
+  });
+  START_HOUR = minH;
+  END_HOUR = maxH;
+  TOTAL_MIN = (END_HOUR-START_HOUR)*60;
+  AXIS_PX = TOTAL_MIN*PX_PER_MIN;
+}
 
 const PALETTE = [
   {key:"orange", hex:"#FF6B35"},
@@ -394,6 +408,7 @@ function layoutOverlaps(sortedEvents){
 }
 
 function render(){
+  recalcAxisBounds();
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
 
@@ -465,9 +480,8 @@ function render(){
       block.style.setProperty('--c', ev.color);
       block.innerHTML = `
         <span class="del-x">✕</span>
-        <span class="tm">${fmt(ev.sh,ev.sm)}~${fmt(ev.eh,ev.em)}</span>
+        <span class="tm">${ev.who?whoIconSvg(ev.who,13):''} ${fmt(ev.sh,ev.sm)}~${fmt(ev.eh,ev.em)}</span>
         <span class="nm">${escapeHtml(ev.name)}</span>
-        ${ev.who ? `<span class="who">${whoIconSvg(ev.who,14)} ${escapeHtml(ev.who)}</span>` : ''}
       `;
       block.addEventListener('click', ()=> openDeleteConfirm(ev));
       col.appendChild(block);
