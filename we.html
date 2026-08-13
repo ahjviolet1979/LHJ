@@ -122,7 +122,7 @@
     transition:box-shadow .1s ease, transform .1s ease;
   }
   .item:hover{ box-shadow:0 3px 10px rgba(27,51,88,0.22); transform:translateY(-1px); }
-  .item .tm{ font-weight:700; font-size:11px; display:flex; align-items:center; gap:3px; white-space:nowrap; }
+  .item .tm{ font-weight:700; font-size:11px; display:flex; align-items:center; gap:3px; flex-wrap:wrap; line-height:1.25; }
   .item .tm svg{ display:block; flex-shrink:0; }
   .item .nm{ font-family:'Jua', sans-serif; font-size:13.5px; display:block; margin-top:2px; }
   .item .who{ display:inline-flex; align-items:center; gap:3px; margin-top:3px; font-size:10px; background:rgba(27,51,88,0.12); border-radius:6px; padding:1px 6px 1px 4px; }
@@ -466,7 +466,7 @@ function render(){
 
     laidOut.forEach(({ev, col: colIdx, cols})=>{
       const top = minutesFromStart(ev.sh, ev.sm)*PX_PER_MIN;
-      const height = Math.max((minutesFromStart(ev.eh,ev.em)-minutesFromStart(ev.sh,ev.sm))*PX_PER_MIN, 8);
+      const height = Math.max((minutesFromStart(ev.eh,ev.em)-minutesFromStart(ev.sh,ev.sm))*PX_PER_MIN, 30);
       const widthPct = 100/cols;
       const leftPct = colIdx*widthPct;
 
@@ -480,10 +480,17 @@ function render(){
       block.style.setProperty('--c', ev.color);
       block.innerHTML = `
         <span class="del-x">✕</span>
-        <span class="tm">${ev.who?whoIconSvg(ev.who,13):''} ${fmt(ev.sh,ev.sm)}~${fmt(ev.eh,ev.em)}</span>
+        <span class="tm">${ev.who?`<span class="who-ic">${whoIconSvg(ev.who,13)}</span>`:''}<span class="time-str">${fmt(ev.sh,ev.sm)}~<wbr>${fmt(ev.eh,ev.em)}</span></span>
         <span class="nm">${escapeHtml(ev.name)}</span>
       `;
-      block.addEventListener('click', ()=> openDeleteConfirm(ev));
+      block.addEventListener('click', (e)=>{
+        if(e.target.closest('.del-x')){
+          e.stopPropagation();
+          openDeleteConfirm(ev);
+        }else{
+          requestPassword(null, ev);
+        }
+      });
       col.appendChild(block);
     });
 
@@ -533,26 +540,41 @@ function escapeHtml(s){
   return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-// ---------- Add modal ----------
+// ---------- Add / Edit modal ----------
 const addOverlay = document.getElementById('addOverlay');
+let editingEventId = null;
+
 function setDayChecks(selectedDays){
   document.querySelectorAll('#dayChecks input[type=checkbox]').forEach(cb=>{
     cb.checked = selectedDays.includes(parseInt(cb.value,10));
   });
 }
-function openAddModal(dayIndex){
-  setDayChecks(dayIndex===undefined || dayIndex===null ? [0] : [dayIndex]);
-  document.getElementById('f-name').value = '';
-  document.querySelectorAll('input[name="f-who"]').forEach(r=>r.checked=false);
-  document.getElementById('f-start').value = '15:00';
-  document.getElementById('f-end').value = '16:00';
+function openAddModal(dayIndex, editEvent){
+  editingEventId = editEvent ? editEvent.id : null;
+  document.querySelector('#addOverlay h2').textContent = editEvent ? '일정 수정' : '일정 추가';
+  document.getElementById('saveAdd').textContent = editEvent ? '수정 완료' : '저장';
+
+  if(editEvent){
+    setDayChecks([editEvent.day]);
+    document.getElementById('f-name').value = editEvent.name;
+    document.querySelectorAll('input[name="f-who"]').forEach(r=>{ r.checked = (r.value===editEvent.who); });
+    document.getElementById('f-start').value = fmt(editEvent.sh, editEvent.sm);
+    document.getElementById('f-end').value = fmt(editEvent.eh, editEvent.em);
+    selectedColor = editEvent.color;
+  }else{
+    setDayChecks(dayIndex===undefined || dayIndex===null ? [0] : [dayIndex]);
+    document.getElementById('f-name').value = '';
+    document.querySelectorAll('input[name="f-who"]').forEach(r=>r.checked=false);
+    document.getElementById('f-start').value = '15:00';
+    document.getElementById('f-end').value = '16:00';
+    selectedColor = PALETTE[0].hex;
+  }
   document.getElementById('formErr').style.display='none';
-  selectedColor = PALETTE[0].hex;
   renderSwatches();
   addOverlay.classList.add('show');
   document.getElementById('f-name').focus();
 }
-function closeAddModal(){ addOverlay.classList.remove('show'); }
+function closeAddModal(){ addOverlay.classList.remove('show'); editingEventId = null; }
 
 function renderSwatches(){
   const wrap = document.getElementById('colorSwatches');
@@ -609,6 +631,9 @@ document.getElementById('saveAdd').addEventListener('click', ()=>{
     return;
   }
 
+  if(editingEventId){
+    events = events.filter(e=>e.id!==editingEventId);
+  }
   selectedDays.forEach(day=>{
     events.push({id:uid(), day, name, who, sh, sm, eh, em, color:selectedColor});
   });
@@ -626,9 +651,11 @@ document.getElementById('grid').addEventListener('click', (e)=>{
 const PASSWORD = "3515";
 const pwOverlay = document.getElementById('pwOverlay');
 let pendingDayIndex = 0;
+let pendingEditEvent = null;
 
-function requestPassword(dayIndex){
+function requestPassword(dayIndex, editEvent){
   pendingDayIndex = dayIndex;
+  pendingEditEvent = editEvent || null;
   document.getElementById('f-password').value = '';
   document.getElementById('pwErr').style.display = 'none';
   pwOverlay.classList.add('show');
@@ -643,7 +670,8 @@ function tryPassword(){
   const val = document.getElementById('f-password').value;
   if(val === PASSWORD){
     closePasswordModal();
-    openAddModal(pendingDayIndex);
+    if(pendingEditEvent){ openAddModal(null, pendingEditEvent); }
+    else{ openAddModal(pendingDayIndex); }
   }else{
     document.getElementById('pwErr').style.display = 'block';
     document.getElementById('f-password').value = '';
