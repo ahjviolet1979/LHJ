@@ -262,6 +262,12 @@ h1{font-family:var(--display);font-weight:400;font-size:1.55rem;line-height:1.2;
   .day .dots span{color:var(--mt)}
   .day .dots span.on,.day.done .dots span.on{color:var(--mi)}
 }
+
+/* late entries: same check, lighter green, entry date instead of time */
+:root{--accent-late:#7cc3ab}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--accent-late:#2c6b57}}
+:root[data-theme="dark"]{--accent-late:#2c6b57}
+.day.done.late{background:var(--accent-late);border-color:var(--accent-late)}
 body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
 </style>
@@ -299,7 +305,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
   </div>
 
   <section class="info">
-    <p class="how"><b>오늘</b>은 운동 완료·꼭 할 거야·못해 중에 고르고, <b>앞으로의 날</b>은 꼭 할 날·못하는 날을 미리 정해둘 수 있어요. 지나간 날은 고칠 수 없어요(어제 기록은 새벽 4시까지).</p>
+    <p class="how"><b>오늘</b>은 운동 완료·꼭 할 거야·못해 중에 고르고, <b>앞으로의 날</b>은 꼭 할 날·못하는 날을 미리 정해둘 수 있어요. 깜빡한 날은 지난 7일까지 늦게라도 기록할 수 있어요(연한 초록으로 남아요). 그 이전은 잠겨요.</p>
     <div class="legend">
       <span><i class="l1"></i>운동 완료</span>
       <span><i class="l3"></i>꼭 할 날</span>
@@ -398,7 +404,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
     var dayRef=db.collection('days').doc(k), planRef=db.collection('plans').doc(k);
     var rec=records[k], plan=plans[k];
     var jobs=[];
-    if(JSON.stringify(rec)!==JSON.stringify(prevRec)) jobs.push(rec?dayRef.set({status:rec.s,date:k,checkedAt:rec.at}):dayRef.delete());
+    if(JSON.stringify(rec)!==JSON.stringify(prevRec)) jobs.push(rec?dayRef.set({status:rec.s,date:k,checkedAt:rec.at,late:!!rec.late}):dayRef.delete());
     if(plan!==prevPlan) jobs.push(plan?planRef.set({type:plan,date:k,setAt:new Date().toISOString()}):planRef.delete());
     Promise.all(jobs).then(function(){$('status').textContent='';}).catch(function(e){
       if(prevRec) records[k]=prevRec; else delete records[k];
@@ -409,7 +415,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
   }
 
   function toggleMed(k,id,name){
-    if(!checkinDay(k)||!canWrite) return;
+    if(!editableDay(k)||!canWrite) return;
     var prev=meds[k]?JSON.parse(JSON.stringify(meds[k])):undefined;
     var cur=Object.assign({},meds[k]||{});
     if(cur[id]) delete cur[id]; else cur[id]=new Date().toISOString();
@@ -431,7 +437,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
       b.setAttribute('aria-pressed',at?'true':'false');
       b.innerHTML='<i></i><span></span>';
       b.querySelector('span').textContent=mm[1]; if(at) b.title=mm[1]+' '+hm(at)+' 복용';
-      if(checkinDay(k)&&canWrite) b.addEventListener('click',function(){toggleMed(k,mm[0],mm[1]);}); else b.disabled=true;
+      if(editableDay(k)&&canWrite) b.addEventListener('click',function(){toggleMed(k,mm[0],mm[1]);}); else b.disabled=true;
       box.appendChild(b);
     });
   }
@@ -441,6 +447,9 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
   function checkinDay(k){var n=new Date(); if(k===key(n)) return true;
     if(n.getHours()<4) return k===key(new Date(n.getFullYear(),n.getMonth(),n.getDate()-1)); return false;}
   function isFuture(k){return k>key(new Date());}
+  // forgotten days: the last 7 days stay editable, entries made there are marked late
+  function lateDay(k){var n=new Date(); return !checkinDay(k)&&k<key(n)&&k>=key(new Date(n.getFullYear(),n.getMonth(),n.getDate()-7));}
+  function editableDay(k){return checkinDay(k)||lateDay(k);}
 
   // A "못하는 날" neither counts toward nor breaks the streak.
   function streak(){
@@ -466,19 +475,21 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
     var first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
     grid.style.gridTemplateRows='auto repeat('+Math.ceil((first+days)/7)+',minmax(0,1fr))';
     var done=0, st=0, missed=0, pledged=0, kept=0, medCount={argona:0,pepper:0,diet:0};
-    var startKey=[startDay].concat(Object.keys(records)).sort()[0];
+    var startKey=startDay; // only days since the calendar started can count as missed; late entries before it don't pull it back
     for(var i=0;i<first;i++){var e=document.createElement('div');e.className='day empty';grid.appendChild(e);}
     for(var d=1;d<=days;d++){
       var k=y+'-'+pad(m+1)+'-'+pad(d), rec=records[k], v=rec?'done':undefined, plan=plans[k];
       var t=rec&&rec.at?hm(rec.at):'';
       var future=isFuture(k), checkin=checkinDay(k);
       var isMissed=!future&&!checkin&&!v&&plan!=='off'&&k>=startKey;
-      var can=canWrite&&(checkin||future);
+      var can=canWrite&&(checkin||future||lateDay(k));
       if(v==='done')done++; if(v==='stretch')st++; if(isMissed)missed++;
       if(plan==='pledge'&&!future&&!checkin){pledged++; if(v)kept++;}
 
       var cls='day', icon='', label='', mark='';
-      if(v){cls+=' '+v; icon=ICON.check; mark=t; label='운동 완료'; if(plan==='pledge'){icon+=ICON.star; label+=', 다짐 지킴';}}
+      if(v){var lt=rec&&rec.late; cls+=' '+v+(lt?' late':''); icon=ICON.check;
+        if(lt){var la=new Date(rec.at); mark=isNaN(la)?'':(la.getMonth()+1)+'/'+la.getDate(); label='운동 완료(늦게 기록)';}
+        else {mark=t; label='운동 완료'; if(plan==='pledge'){icon+=ICON.star; label+=', 다짐 지킴';}}}
       else if(isMissed){cls+=' missed'+(plan==='pledge'?' broken':''); icon=ICON.sad; label=plan==='pledge'?'꼭 하기로 했지만 운동 안 함':'운동 안 함';}
       else if(plan==='pledge'){cls+=' pledge'; icon=ICON.flag; mark='꼭!'; label='꼭 할 날';}
       else if(plan==='off'){cls+=' off'; icon=ICON.moon; mark='사정'; label='못하는 날';}
@@ -529,8 +540,8 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
   var DOW=['일','월','화','수','목','금','토'];
   function currentState(k){var r=records[k]; return r?r.s:(plans[k]||'none');}
   function tap(k){
-    var checkin=checkinDay(k), future=isFuture(k);
-    if(!checkin&&!future) return;
+    var checkin=checkinDay(k), future=isFuture(k), late=lateDay(k);
+    if(!checkin&&!future&&!late) return;
     var p=k.split('-'), dt=new Date(+p[0],+p[1]-1,+p[2]);
     $('sheetTitle').textContent=(+p[1])+'월 '+(+p[2])+'일 ('+DOW[dt.getDay()]+')'+(k===todayKey?' · 오늘':'');
     var cur=currentState(k), hasRec=!!records[k];
@@ -539,6 +550,9 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
       opts.push(['done','운동 완료','10분 루틴 끝!']);
       if(!hasRec) opts.push(['pledge','오늘은 꼭 할 거야','오늘의 다짐 찍어두기']);
       opts.push(['off','오늘은 못해','회식·야근 등 사정이 있는 날']);
+    } else if(late){
+      opts.push(['done','운동 완료','깜빡하고 못 남긴 날']);
+      opts.push(['off','못한 날','사정이 있었던 날']);
     } else {
       opts.push(['pledge','꼭 할 날','이날은 무조건 운동']);
       opts.push(['off','못하는 날','회식·출장 등 미리 빼두기']);
@@ -552,7 +566,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
       b.addEventListener('click',function(){closeSheet(); apply(k,o[0]);});
       box.appendChild(b);
     });
-    $('sheetMeds').hidden=!checkin; if(checkin) renderSheetMeds(k);
+    $('sheetMeds').hidden=!(checkin||late); if(checkin||late) renderSheetMeds(k);
     sheetKey=k; lastFocus=document.activeElement;
     $('sheet').hidden=false; requestAnimationFrame(function(){$('sheet').classList.add('open'); var f=box.querySelector('button'); if(f) f.focus();});
   }
@@ -567,12 +581,12 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSheet();});
 
   function apply(k,choice){
-    var prevRec=records[k]?{s:records[k].s,at:records[k].at}:undefined, prevPlan=plans[k], msg='';
+    var prevRec=records[k]?JSON.parse(JSON.stringify(records[k])):undefined, prevPlan=plans[k], msg='';
     if(choice==='done'||choice==='stretch'){
-      if(!prevRec||prevRec.s!==choice) records[k]={s:choice,at:new Date().toISOString()};
+      if(!prevRec||prevRec.s!==choice){records[k]={s:choice,at:new Date().toISOString()}; if(lateDay(k)) records[k].late=true;}
       if(plans[k]==='off') delete plans[k]; // worked out after all
       msg=choice==='done'?pick(cheersDone):pick(cheersStretch);
-      if(plans[k]==='pledge') msg+=' 다짐도 지켰어요 ⭐';
+      if(records[k].late) msg='늦게라도 남겼어요 ✓'; else if(plans[k]==='pledge') msg+=' 다짐도 지켰어요 ⭐';
     } else if(choice==='pledge'){
       plans[k]='pledge'; msg=k===todayKey?'좋아요, 오늘 꼭 해요! 🚩':'다짐 완료! 그날 꼭 해요 🚩';
     } else if(choice==='off'){
@@ -604,7 +618,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
       try{
         var data=JSON.parse(r.result), days=data.days||data, pl=data.plans||{}, n=0;
         Object.keys(days).forEach(function(k){var v=days[k];
-          if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&v&&(v.s==='done'||v.s==='stretch')){records[k]={s:v.s,at:typeof v.at==='string'?v.at:''};n++;}});
+          if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&v&&(v.s==='done'||v.s==='stretch')){records[k]={s:v.s,at:typeof v.at==='string'?v.at:''}; if(v.late) records[k].late=true; n++;}});
         Object.keys(pl).forEach(function(k){if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&(pl[k]==='pledge'||pl[k]==='off'))plans[k]=pl[k];});
         var md=data.meds||{};
         Object.keys(md).forEach(function(k){if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||!md[k])return; var o={};
@@ -636,7 +650,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
       var timer=setTimeout(function(){$('status').textContent='기록을 아직 불러오지 못했어요. 연결을 확인해 주세요.';},10000);
       function ready(snap){if(!snap.metadata.fromCache){if(gotDays&&gotPlans){clearTimeout(timer);if(canWrite)$('status').textContent='';}}}
       db.collection('days').onSnapshot(function(snap){
-        var r={}; snap.docs.forEach(function(x){var v=x.data(); if(v&&(v.status==='done'||v.status==='stretch')) r[x.id]={s:v.status,at:v.checkedAt||v.updatedAt||''};});
+        var r={}; snap.docs.forEach(function(x){var v=x.data(); if(v&&(v.status==='done'||v.status==='stretch')) r[x.id]={s:v.status,at:v.checkedAt||v.updatedAt||''}; if(v.late) r[x.id].late=true;});
         records=r; if(!snap.metadata.fromCache)gotDays=true; render(); ready(snap);
       },function(){clearTimeout(timer);$('status').textContent='기록을 불러오지 못했어요.';});
       db.collection('plans').onSnapshot(function(snap){
