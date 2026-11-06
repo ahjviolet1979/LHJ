@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f6f8f6">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="운동 달력">
-<title>밤 10분 운동 달력</title>
+<meta name="apple-mobile-web-app-title" content="운동달력">
+<title>매일10분 운동달력</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
@@ -117,7 +117,7 @@ h1{font-family:var(--display);font-weight:400;font-size:1.55rem;line-height:1.2;
 /* medicine check */
 :root{--argona:#4f7fe0;--pepper:#e0533d;--diet:#8a63d2}
 .md-argona{--mc:var(--argona)} .md-pepper{--mc:var(--pepper)} .md-diet{--mc:var(--diet)}
-.meds{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;flex:1 1 300px;min-width:0;font-size:.72rem;color:var(--muted);padding:0 2px}
+.meds{display:flex;align-items:center;flex-wrap:nowrap;gap:10px;flex:0 1 auto;min-width:0;font-size:.72rem;color:var(--muted);padding:0 2px}
 .when{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 .when i{width:8px;height:8px;border-radius:50%;background:var(--mc)}
 .when b{color:var(--fg);font-weight:600}
@@ -184,6 +184,34 @@ h1{font-family:var(--display);font-weight:400;font-size:1.55rem;line-height:1.2;
 .opt-clear .dot{background:transparent;border-style:dashed}
 @media (prefers-reduced-motion:reduce){.sheet-bg,.sheet-panel{transition:none}}
 @media (prefers-reduced-motion:reduce){.day{transition:none}.day:active{transform:none}.day.pop{animation:none}.day.pop .ic.check path{animation:none;stroke-dashoffset:0}.toast{transition:none}}
+
+/* cell layout that adapts to short cells (unfolded / landscape) */
+.day{container-type:size}
+.day .ic{flex:0 1 auto;min-height:0}
+.day .dots{position:static;margin-top:3px;flex:none}
+.day.has-ic{justify-content:center;padding-top:12px}
+@container (max-height:84px){
+  .day .ic{height:34%}
+  .day .ic.sad,.day .ic.flag,.day .ic.moon{height:30%;margin-top:4px}
+  .day.has-ic{padding-top:10px}
+}
+@container (max-height:66px){
+  .day .m{display:none}
+  .day.has-ic{padding-top:8px}
+}
+
+/* medicine guide: one line at every width */
+.meds{min-width:0;max-width:100%;overflow:hidden}
+.when .short{display:none}
+@media (max-width:480px){
+  .bar{gap:6px}
+  .meds{gap:8px;font-size:.66rem;letter-spacing:-.01em}
+  .when{gap:3px}
+  .when i{display:none}
+  .when b{color:var(--mc)}
+  .when .full{display:none}
+  .when .short{display:inline}
+}
 body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
 </style>
@@ -193,7 +221,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
   <!-- first screen: title, the three numbers and the whole month always fit the viewport -->
   <div class="screen">
     <header class="top">
-      <h1>밤 10분 운동 달력</h1>
+      <h1>매일10분 운동달력</h1>
       <p class="sub">날짜를 눌러 기록해요</p>
     </header>
 
@@ -206,7 +234,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
     <section class="meds" aria-label="복용 시간">
       <span class="when md-argona"><i></i><b>아르고나</b> 취침 전</span>
       <span class="when md-pepper"><i></i><b>페퍼컷</b> 운동 전</span>
-      <span class="when md-diet"><i></i><b>다이어트약</b> 식사 1~2시간 전</span>
+      <span class="when md-diet"><i></i><b>다이어트약</b> <span class="full">식전 1~2시간</span><span class="short">식전 1~2시간</span></span>
     </section>
     </div>
 
@@ -286,7 +314,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
   var records={}; // 'YYYY-MM-DD' -> {s:'done'|'stretch', at:ISO}
   var plans={};   // 'YYYY-MM-DD' -> 'pledge' (꼭 할 날) | 'off' (못하는 날)
   var meds={};    // 'YYYY-MM-DD' -> {argona:ISO, pepper:ISO, diet:ISO} (time each was ticked)
-  var MEDS=[['argona','아르고나','아','취침 전'],['pepper','페퍼컷','페','운동 전'],['diet','다이어트약','다','식사 1~2시간 전']];
+  var MEDS=[['argona','아르고나','아','취침 전'],['pepper','페퍼컷','페','운동 전'],['diet','다이어트약','다','식전 1~2시간']];
   var startDay='2026-11-06';
   var mode='local', db=null, canWrite=true;
   var popKey=null, toastTimer=null;
