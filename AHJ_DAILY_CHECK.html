@@ -37,9 +37,12 @@ h1{font-family:var(--display);font-weight:400;font-size:1.55rem;line-height:1.2;
 .sub{color:var(--muted);margin:0;font-size:.8rem}
 .how{color:var(--muted);margin:0 0 4px;font-size:.84rem}
 .how b{color:var(--fg);font-weight:600}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:none}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:none}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;flex:1 1 220px;max-width:290px}
 .stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 10px;display:flex;align-items:baseline;gap:6px;min-width:0}
-.stat b{font-family:var(--display);font-weight:400;font-size:1.3rem;line-height:1.2;font-variant-numeric:tabular-nums}
+.stat{justify-content:space-between}
+.stat b{font-family:var(--display);font-weight:400;font-size:1.3rem;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat b small{font-size:.8rem;color:var(--muted);margin-left:1px}
 .stat span{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .stat.go b{color:var(--accent)} .stat.st b{color:var(--stretch)}
 .cal{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
@@ -111,6 +114,48 @@ h1{font-family:var(--display);font-weight:400;font-size:1.55rem;line-height:1.2;
   background:var(--fg);color:var(--bg);padding:12px 18px;border-radius:999px;font-weight:600;font-size:.95rem;max-width:calc(100% - 32px);text-align:center;
   transition:opacity .25s,transform .25s;box-shadow:0 6px 20px rgba(0,0,0,.18);z-index:20}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+/* medicine check */
+:root{--argona:#4f7fe0;--pepper:#e0533d;--diet:#8a63d2}
+.md-argona{--mc:var(--argona)} .md-pepper{--mc:var(--pepper)} .md-diet{--mc:var(--diet)}
+.meds{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;flex:1 1 300px;min-width:0;font-size:.72rem;color:var(--muted);padding:0 2px}
+.when{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.when i{width:8px;height:8px;border-radius:50%;background:var(--mc)}
+.when b{color:var(--fg);font-weight:600}
+.meds-l{font-size:.75rem;color:var(--muted);white-space:nowrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;min-width:0}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;
+  padding:5px 11px 5px 8px;font:inherit;font-size:.8rem;cursor:pointer;font-variant-numeric:tabular-nums;-webkit-tap-highlight-color:transparent}
+.chip i{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--mc);display:inline-grid;place-items:center;flex:none}
+.chip.on{background:var(--mc);border-color:var(--mc);color:#fff;font-weight:600}
+.chip.on i{border-color:#fff;background:#fff}
+.chip.on i::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--mc)}
+.chip:disabled{cursor:default;opacity:.6}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.day .dots{position:absolute;bottom:4px;left:0;right:0;display:flex;justify-content:center;gap:4px;font-size:clamp(.55rem,2.3vw,.68rem);line-height:1;font-weight:600}
+.day .dots span{display:inline-flex;align-items:center;gap:1px;color:var(--muted);opacity:.5}
+.day .dots i{width:6px;height:6px;border-radius:50%;border:1px solid var(--mc)}
+.day .dots span.on{opacity:1;color:var(--mc)}
+.day .dots span.on i{background:var(--mc)}
+.day.done .dots span{color:#fff}
+.day.done .dots i{border-color:#fff}
+.day.done .dots span.on{color:#fff}
+.day.done .dots span.on i{background:var(--mc);border-color:#fff}
+/* narrow (folded) screens: the letter sits inside its circle so all three fit in one cell */
+@media (max-width:480px){
+  .day .dots{gap:1px;bottom:3px;font-size:.5rem}
+  .day .dots span{width:13px;height:13px;border-radius:50%;border:1px solid var(--mc);justify-content:center;gap:0;opacity:.45;color:var(--mc)}
+  .day .dots span i{display:none}
+  .day .dots span.on{background:var(--mc);color:#fff;opacity:1}
+  .day.done .dots span{border-color:#fff;color:#fff}
+  .day.done .dots span.on{background:var(--mc);border-color:#fff}
+}
+.legend .md{border-radius:50%;background:var(--mc);border-color:var(--mc)}
+.sheet-meds{margin-top:12px;display:flex;align-items:center;gap:10px;min-width:0}
+.sheet-meds p{margin:0;font-size:.75rem;color:var(--muted);flex:none}
+.sheet-meds .chips{flex-wrap:nowrap;gap:5px}
+.sheet-meds .chip{padding:4px 9px 4px 7px;font-size:.76rem;white-space:nowrap;gap:5px}
+.sheet-meds .chip i{width:11px;height:11px}
+.sheet-meds .chip.on i::after{width:5px;height:5px}
 .sheet{position:fixed;inset:0;z-index:30}
 .sheet-bg{position:absolute;inset:0;background:rgba(10,20,16,.38);opacity:0;transition:opacity .18s}
 .sheet-panel{position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;background:var(--surface);border-radius:18px 18px 0 0;
@@ -123,13 +168,14 @@ h1{font-family:var(--display);font-weight:400;font-size:1.55rem;line-height:1.2;
 .sheet-x{border:0;background:transparent;color:var(--muted);font-size:1.1rem;width:36px;height:36px;border-radius:10px;cursor:pointer}
 .sheet-opts{display:grid;gap:8px}
 .opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--fg);
-  border-radius:12px;padding:12px 14px;font:inherit;cursor:pointer}
+  border-radius:12px;padding:11px 14px;font:inherit;cursor:pointer}
 .opt:focus-visible,.sheet-x:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .opt.on{border-color:var(--fg)}
 .opt .dot{flex:none;width:16px;height:16px;border-radius:5px;border:1px solid var(--line)}
-.opt .tx{display:grid;min-width:0}
+.opt .tx{display:flex;align-items:baseline;gap:8px;min-width:0;white-space:nowrap}
 .opt b{font-weight:600}
-.opt small{color:var(--muted);font-size:.8rem}
+.opt b{flex:none}
+.opt small{color:var(--muted);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .opt small:empty{display:none}
 .opt-done .dot{background:var(--accent);border-color:var(--accent)}
 .opt-stretch .dot{background:var(--stretch-soft);border-color:var(--stretch)}
@@ -151,11 +197,18 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
       <p class="sub">날짜를 눌러 기록해요</p>
     </header>
 
+    <div class="bar">
     <section class="stats" aria-label="이번 달 기록">
-      <div class="stat go"><b id="sDone">0</b><span>이번 달 운동</span></div>
-      <div class="stat st"><b id="sStretch">0</b><span>스트레칭만</span></div>
-      <div class="stat"><b id="sStreak">0</b><span>연속 기록(일)</span></div>
+      <div class="stat go"><span>이번 달 운동</span><b><span id="sDone">0</span><small id="sTotal">/30</small></b></div>
+      <div class="stat"><span>연속 기록</span><b><span id="sStreak">0</span><small>일</small></b></div>
     </section>
+
+    <section class="meds" aria-label="복용 시간">
+      <span class="when md-argona"><i></i><b>아르고나</b> 취침 전</span>
+      <span class="when md-pepper"><i></i><b>페퍼컷</b> 운동 전</span>
+      <span class="when md-diet"><i></i><b>다이어트약</b> 식사 1~2시간 전</span>
+    </section>
+    </div>
 
     <section class="cal">
       <div class="cal-head">
@@ -168,14 +221,20 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
   </div>
 
   <section class="info">
-    <p class="how"><b>오늘</b>은 운동 완료·스트레칭·꼭 할 거야·못해 중에 고르고, <b>앞으로의 날</b>은 꼭 할 날·못하는 날을 미리 정해둘 수 있어요. 지나간 날은 고칠 수 없어요(어제 기록은 새벽 4시까지).</p>
+    <p class="how"><b>오늘</b>은 운동 완료·꼭 할 거야·못해 중에 고르고, <b>앞으로의 날</b>은 꼭 할 날·못하는 날을 미리 정해둘 수 있어요. 지나간 날은 고칠 수 없어요(어제 기록은 새벽 4시까지).</p>
     <div class="legend">
       <span><i class="l1"></i>운동 완료</span>
-      <span><i class="l2"></i>스트레칭만</span>
       <span><i class="l3"></i>꼭 할 날</span>
       <span><i class="l4"></i>못하는 날</span>
       <span><i class="l5"></i>운동 안 한 날</span>
     </div>
+    <div class="legend">
+      <span><i class="md md-argona"></i>아르고나</span>
+      <span><i class="md md-pepper"></i>페퍼컷</span>
+      <span><i class="md md-diet"></i>다이어트약</span>
+      <span>칸 아래 아·페·다 = 그날 복용 (진하게 = 먹음). 날짜를 눌러 체크해요</span>
+    </div>
+    <p class="note" id="medSummary"></p>
     <p class="note" id="summary"></p>
     <p class="note" id="last"></p>
     <p class="note" id="status" role="status"></p>
@@ -188,6 +247,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
     <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
       <div class="sheet-head"><h3 id="sheetTitle"></h3><button class="sheet-x" id="sheetClose" type="button" aria-label="닫기">✕</button></div>
       <div class="sheet-opts" id="sheetOpts"></div>
+      <div class="sheet-meds" id="sheetMeds" hidden><p>복용</p><div class="chips" id="sheetMedChips"></div></div>
     </div>
   </div>
 
@@ -225,6 +285,8 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
 
   var records={}; // 'YYYY-MM-DD' -> {s:'done'|'stretch', at:ISO}
   var plans={};   // 'YYYY-MM-DD' -> 'pledge' (꼭 할 날) | 'off' (못하는 날)
+  var meds={};    // 'YYYY-MM-DD' -> {argona:ISO, pepper:ISO, diet:ISO} (time each was ticked)
+  var MEDS=[['argona','아르고나','아','취침 전'],['pepper','페퍼컷','페','운동 전'],['diet','다이어트약','다','식사 1~2시간 전']];
   var startDay='2026-11-06';
   var mode='local', db=null, canWrite=true;
   var popKey=null, toastTimer=null;
@@ -238,18 +300,19 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
   };
 
   // ---------- storage ----------
-  var LS_DAYS='workout-days-v1', LS_PLANS='workout-plans-v1', LS_START='workout-start-v1';
+  var LS_DAYS='workout-days-v1', LS_PLANS='workout-plans-v1', LS_START='workout-start-v1', LS_MEDS='workout-meds-v1';
   function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
   function lsSet(k,v){try{localStorage.setItem(k,v);return true;}catch(e){return false;}}
   function loadLocal(){
     try{records=JSON.parse(lsGet(LS_DAYS)||'{}')||{};}catch(e){records={};}
     try{plans=JSON.parse(lsGet(LS_PLANS)||'{}')||{};}catch(e){plans={};}
+    try{meds=JSON.parse(lsGet(LS_MEDS)||'{}')||{};}catch(e){meds={};}
     // older saves stored a bare status string
     Object.keys(records).forEach(function(k){if(typeof records[k]==='string')records[k]={s:records[k],at:''};});
     var s=lsGet(LS_START); if(s) startDay=s; else {startDay=todayKey; lsSet(LS_START,todayKey);}
   }
   function saveLocal(){
-    if(!lsSet(LS_DAYS,JSON.stringify(records))||!lsSet(LS_PLANS,JSON.stringify(plans))) toast('저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');
+    if(!lsSet(LS_DAYS,JSON.stringify(records))||!lsSet(LS_PLANS,JSON.stringify(plans))||!lsSet(LS_MEDS,JSON.stringify(meds))) toast('저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');
   }
   // write one day's record and plan to wherever this page keeps them
   function persist(k,prevRec,prevPlan){
@@ -264,6 +327,34 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
       if(prevPlan) plans[k]=prevPlan; else delete plans[k];
       render();
       $('status').textContent=(e&&e.code==='invalid_argument')?'이 화면에서는 기록을 바꿀 수 없어요.':'저장하지 못했어요. 잠시 후 다시 눌러 주세요.';
+    });
+  }
+
+  function toggleMed(k,id,name){
+    if(!checkinDay(k)||!canWrite) return;
+    var prev=meds[k]?JSON.parse(JSON.stringify(meds[k])):undefined;
+    var cur=Object.assign({},meds[k]||{});
+    if(cur[id]) delete cur[id]; else cur[id]=new Date().toISOString();
+    if(Object.keys(cur).length) meds[k]=cur; else delete meds[k];
+    render(); if(sheetKey===k) renderSheetMeds(k);
+    toast(cur[id]?(name+' 먹었어요 ✓ '+hm(cur[id])):(name+' 체크 취소'));
+    if(mode==='local'){saveLocal();return;}
+    var ref=db.collection('meds').doc(k);
+    (meds[k]?ref.set(Object.assign({date:k},meds[k])):ref.delete()).then(function(){$('status').textContent='';}).catch(function(){
+      if(prev) meds[k]=prev; else delete meds[k]; render(); if(sheetKey===k) renderSheetMeds(k);
+      $('status').textContent='복용 체크를 저장하지 못했어요. 잠시 후 다시 눌러 주세요.';
+    });
+  }
+  function medChips(box,k){
+    box.innerHTML='';
+    MEDS.forEach(function(mm){
+      var at=meds[k]&&meds[k][mm[0]];
+      var b=document.createElement('button'); b.type='button'; b.className='chip md-'+mm[0]+(at?' on':'');
+      b.setAttribute('aria-pressed',at?'true':'false');
+      b.innerHTML='<i></i><span></span>';
+      b.querySelector('span').textContent=mm[1]; if(at) b.title=mm[1]+' '+hm(at)+' 복용';
+      if(checkinDay(k)&&canWrite) b.addEventListener('click',function(){toggleMed(k,mm[0],mm[1]);}); else b.disabled=true;
+      box.appendChild(b);
     });
   }
 
@@ -296,11 +387,11 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
     ['일','월','화','수','목','금','토'].forEach(function(t,i){var e=document.createElement('div');e.className='dow'+(i===0?' sun':i===6?' sat':'');e.textContent=t;grid.appendChild(e);});
     var first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
     grid.style.gridTemplateRows='auto repeat('+Math.ceil((first+days)/7)+',minmax(0,1fr))';
-    var done=0, st=0, missed=0, pledged=0, kept=0;
+    var done=0, st=0, missed=0, pledged=0, kept=0, medCount={argona:0,pepper:0,diet:0};
     var startKey=[startDay].concat(Object.keys(records)).sort()[0];
     for(var i=0;i<first;i++){var e=document.createElement('div');e.className='day empty';grid.appendChild(e);}
     for(var d=1;d<=days;d++){
-      var k=y+'-'+pad(m+1)+'-'+pad(d), rec=records[k], v=rec&&rec.s, plan=plans[k];
+      var k=y+'-'+pad(m+1)+'-'+pad(d), rec=records[k], v=rec?'done':undefined, plan=plans[k];
       var t=rec&&rec.at?hm(rec.at):'';
       var future=isFuture(k), checkin=checkinDay(k);
       var isMissed=!future&&!checkin&&!v&&plan!=='off'&&k>=startKey;
@@ -309,7 +400,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
       if(plan==='pledge'&&!future&&!checkin){pledged++; if(v)kept++;}
 
       var cls='day', icon='', label='', mark='';
-      if(v){cls+=' '+v; icon=ICON.check; mark=t; label=v==='done'?'운동 완료':'스트레칭만'; if(plan==='pledge'){icon+=ICON.star; label+=', 다짐 지킴';}}
+      if(v){cls+=' '+v; icon=ICON.check; mark=t; label='운동 완료'; if(plan==='pledge'){icon+=ICON.star; label+=', 다짐 지킴';}}
       else if(isMissed){cls+=' missed'+(plan==='pledge'?' broken':''); icon=ICON.sad; label=plan==='pledge'?'꼭 하기로 했지만 운동 안 함':'운동 안 함';}
       else if(plan==='pledge'){cls+=' pledge'; icon=ICON.flag; mark='꼭!'; label='꼭 할 날';}
       else if(plan==='off'){cls+=' off'; icon=ICON.moon; mark='사정'; label='못하는 날';}
@@ -323,12 +414,18 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
       var b=document.createElement(can?'button':'div');
       if(can) b.type='button'; else b.setAttribute('role','img');
       b.className=cls;
-      b.innerHTML='<span class="n">'+d+'</span>'+icon+'<span class="m">'+mark+'</span>';
+      var md=meds[k], dots='';
+      if(md||(!future&&k>=startKey)){
+        dots='<span class="dots">'+MEDS.map(function(mm){if(md&&md[mm[0]])medCount[mm[0]]++; return '<span class="md-'+mm[0]+(md&&md[mm[0]]?' on':'')+'"><i></i>'+mm[2]+'</span>';}).join('')+'</span>';
+        if(md) label+=', 복용: '+MEDS.filter(function(mm){return md[mm[0]];}).map(function(mm){return mm[1];}).join(' ');
+      }
+      b.innerHTML='<span class="n">'+d+'</span>'+icon+'<span class="m">'+mark+'</span>'+dots;
       b.setAttribute('aria-label',(m+1)+'월 '+d+'일 '+label+(t?' '+t+' 체크':''));
       if(can) b.addEventListener('click',(function(kk){return function(){tap(kk);};})(k));
       grid.appendChild(b);
     }
-    $('sDone').textContent=done; $('sStretch').textContent=st; $('sStreak').textContent=streak();
+    $('sDone').textContent=done; $('sTotal').textContent='/'+days; $('sStreak').textContent=streak();
+    $('medSummary').textContent='이번 달 복용 · '+MEDS.map(function(mm){return mm[1]+' '+medCount[mm[0]]+'일';}).join(' · ');
 
     var parts=[];
     if(pledged) parts.push('꼭 할 날 '+pledged+'일 중 '+kept+'일 해냄');
@@ -339,7 +436,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
 
     var keys=Object.keys(records).filter(function(x){return records[x]&&records[x].at;}).sort(function(a,b){return records[b].at.localeCompare(records[a].at);});
     if(keys.length){var lk=keys[0],lr=records[lk],p=lk.split('-'),la=new Date(lr.at);
-      $('last').textContent='마지막 체크 · '+(+p[1])+'월 '+(+p[2])+'일 '+(lr.s==='done'?'운동 완료':'스트레칭만')+' ('+(la.getMonth()+1)+'/'+la.getDate()+' '+hm(lr.at)+' 등록)';}
+      $('last').textContent='마지막 체크 · '+(+p[1])+'월 '+(+p[2])+'일 '+'운동 완료'+' ('+(la.getMonth()+1)+'/'+la.getDate()+' '+hm(lr.at)+' 등록)';}
     else $('last').textContent='아직 체크한 날이 없어요. 오늘 운동 끝나면 오늘 날짜를 눌러 주세요.';
   }
 
@@ -362,7 +459,6 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
     var opts=[];
     if(checkin){
       opts.push(['done','운동 완료','10분 루틴 끝!']);
-      opts.push(['stretch','스트레칭만','술 마신 날, 가볍게']);
       if(!hasRec) opts.push(['pledge','오늘은 꼭 할 거야','오늘의 다짐 찍어두기']);
       opts.push(['off','오늘은 못해','회식·야근 등 사정이 있는 날']);
     } else {
@@ -378,9 +474,11 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
       b.addEventListener('click',function(){closeSheet(); apply(k,o[0]);});
       box.appendChild(b);
     });
+    $('sheetMeds').hidden=!checkin; if(checkin) renderSheetMeds(k);
     sheetKey=k; lastFocus=document.activeElement;
     $('sheet').hidden=false; requestAnimationFrame(function(){$('sheet').classList.add('open'); var f=box.querySelector('button'); if(f) f.focus();});
   }
+  function renderSheetMeds(k){medChips($('sheetMedChips'),k);}
   function closeSheet(){
     if(sheetKey===null) return; sheetKey=null;
     var s=$('sheet'); s.classList.remove('open'); setTimeout(function(){if(sheetKey===null)s.hidden=true;},180);
@@ -416,7 +514,7 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
 
   // backup (only shown when records live in this browser)
   $('exportBtn').addEventListener('click',function(){
-    var blob=new Blob([JSON.stringify({version:2,days:records,plans:plans,start:startDay},null,2)],{type:'application/json'});
+    var blob=new Blob([JSON.stringify({version:3,days:records,plans:plans,meds:meds,start:startDay},null,2)],{type:'application/json'});
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='workout-backup-'+todayKey+'.json';
     document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);
   });
@@ -430,6 +528,10 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
         Object.keys(days).forEach(function(k){var v=days[k];
           if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&v&&(v.s==='done'||v.s==='stretch')){records[k]={s:v.s,at:typeof v.at==='string'?v.at:''};n++;}});
         Object.keys(pl).forEach(function(k){if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&(pl[k]==='pledge'||pl[k]==='off'))plans[k]=pl[k];});
+        var md=data.meds||{};
+        Object.keys(md).forEach(function(k){if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||!md[k])return; var o={};
+          MEDS.forEach(function(mm){if(typeof md[k][mm[0]]==='string'&&md[k][mm[0]])o[mm[0]]=md[k][mm[0]];});
+          if(Object.keys(o).length) meds[k]=o;});
         if(typeof data.start==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(data.start)&&data.start<startDay){startDay=data.start;lsSet(LS_START,startDay);}
         saveLocal(); render(); toast(n+'일 기록을 불러왔어요');
       }catch(err){toast('백업 파일을 읽지 못했어요. 이 달력에서 저장한 파일인지 확인해 주세요.');}
@@ -463,6 +565,12 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
         var p={}; snap.docs.forEach(function(x){var v=x.data(); if(v&&(v.type==='pledge'||v.type==='off')) p[x.id]=v.type;});
         plans=p; if(!snap.metadata.fromCache)gotPlans=true; render(); ready(snap);
       },function(){clearTimeout(timer);$('status').textContent='기록을 불러오지 못했어요.';});
+      db.collection('meds').onSnapshot(function(snap){
+        var q={}; snap.docs.forEach(function(x){var v=x.data()||{}, o={};
+          MEDS.forEach(function(mm){if(typeof v[mm[0]]==='string'&&v[mm[0]])o[mm[0]]=v[mm[0]];});
+          if(Object.keys(o).length) q[x.id]=o;});
+        meds=q; render(); if(sheetKey) renderSheetMeds(sheetKey);
+      },function(){$('status').textContent='복용 기록을 불러오지 못했어요.';});
     });
   } else {
     // standalone page (e.g. GitHub Pages): records stay in this browser
