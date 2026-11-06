@@ -214,6 +214,32 @@ h1{font-family:var(--display);font-weight:400;font-size:1.55rem;line-height:1.2;
   .when .full{display:none}
   .when .short{display:inline}
 }
+
+/* the three medicine circles scale with the cell width so they never spill out */
+@media (max-width:480px){
+  .day .dots{gap:1px;max-width:100%}
+  .day .dots span{width:min(13px,29cqw);height:min(13px,29cqw);font-size:min(.5rem,19cqw);flex:none}
+}
+@media (max-width:400px){.top .sub{display:none}}
+
+/* smaller mark near the top; time and medicine circles sit at the bottom */
+.day.has-ic{justify-content:flex-start;padding-top:calc(clamp(.72rem,2.9vw,.85rem) + 9px);padding-bottom:4px}
+.day .ic,.day .ic.sad,.day .ic.flag,.day .ic.moon{height:30%;max-height:26px;margin-top:0}
+.day.has-ic .m{margin-top:auto}
+.day .dots{margin-top:2px}
+@container (max-height:84px){.day .ic,.day .ic.sad,.day .ic.flag,.day .ic.moon{height:24%}}
+@container (max-height:66px){.day .ic,.day .ic.sad,.day .ic.flag,.day .ic.moon{height:20%}.day.has-ic{padding-top:calc(clamp(.72rem,2.9vw,.85rem) + 5px);padding-bottom:3px}}
+
+/* wider phones (unfolded): numbers and medicine guide share one row */
+@media (min-width:520px){
+  .bar{flex-wrap:nowrap;gap:10px}
+  .stats{flex:none;display:flex;gap:6px;max-width:none}
+  .stat{gap:10px;padding:6px 10px}
+  .meds{flex:1 1 auto;min-width:0;gap:9px;font-size:clamp(.64rem,1.45vw,.76rem);justify-content:flex-end}
+  .when{gap:3px}
+  .when i{display:none}
+  .when b{color:var(--mc)}
+}
 body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
 </style>
