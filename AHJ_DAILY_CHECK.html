@@ -196,8 +196,10 @@ h1{font-family:var(--display);font-weight:400;font-size:1.55rem;line-height:1.2;
   .day.has-ic{padding-top:10px}
 }
 @container (max-height:66px){
-  .day .m{display:none}
-  .day.has-ic{padding-top:8px}
+  .day .ic,.day .ic.sad,.day .ic.flag,.day .ic.moon{height:24%;margin-top:2px}
+  .day .m{font-size:.58rem;min-height:0}
+  .day .dots{margin-top:2px}
+  .day.has-ic{padding-top:9px;gap:0}
 }
 
 /* medicine guide: one line at every width */
