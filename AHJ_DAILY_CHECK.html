@@ -231,7 +231,7 @@ h1{font-family:var(--display);font-weight:400;font-size:1.55rem;line-height:1.2;
 @container (max-height:66px){.day .ic,.day .ic.sad,.day .ic.flag,.day .ic.moon{height:20%}.day.has-ic{padding-top:calc(clamp(.72rem,2.9vw,.85rem) + 5px);padding-bottom:3px}}
 
 /* wider phones (unfolded): numbers and medicine guide share one row */
-@media (min-width:520px){
+@media (min-width:545px){
   .bar{flex-wrap:nowrap;gap:10px}
   .stats{flex:none;display:flex;gap:6px;max-width:none}
   .stat{gap:10px;padding:6px 10px}
@@ -239,6 +239,28 @@ h1{font-family:var(--display);font-weight:400;font-size:1.55rem;line-height:1.2;
   .when{gap:3px}
   .when i{display:none}
   .when b{color:var(--mc)}
+}
+
+/* medicine guide: first letter in a colored circle, matching the circles in the calendar cells */
+.when i{display:none}
+.when b{color:var(--fg);display:inline-flex;align-items:center}
+.when em{font-style:normal;display:inline-grid;place-items:center;width:1.45em;height:1.45em;border-radius:50%;
+  background:var(--mc);color:#fff;font-size:.88em;font-weight:700;margin-right:1px;line-height:1}
+
+/* diet pill = yellow; each medicine also gets an ink (text on its fill) and a text tone (its color on light ground) */
+:root{--diet:#f2b705}
+.md-argona{--mi:#fff;--mt:var(--argona)}
+.md-pepper{--mi:#fff;--mt:var(--pepper)}
+.md-diet{--mi:#3b2d00;--mt:#b58500}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .md-diet{--mt:#f2c53d}}
+:root[data-theme="dark"] .md-diet{--mt:#f2c53d}
+.when em{color:var(--mi)}
+.chip.on{color:var(--mi)}
+.day .dots span.on{color:var(--mt)}
+.day.done .dots span.on{color:#fff}
+@media (max-width:480px){
+  .day .dots span{color:var(--mt)}
+  .day .dots span.on,.day.done .dots span.on{color:var(--mi)}
 }
 body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
@@ -260,9 +282,9 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
     </section>
 
     <section class="meds" aria-label="복용 시간">
-      <span class="when md-argona"><i></i><b>아르고나</b> 취침 전</span>
-      <span class="when md-pepper"><i></i><b>페퍼컷</b> 운동 전</span>
-      <span class="when md-diet"><i></i><b>다이어트약</b> <span class="full">식전 1~2시간</span><span class="short">식전 1~2시간</span></span>
+      <span class="when md-argona"><b><em>아</em>르고나</b> 취침 전</span>
+      <span class="when md-pepper"><b><em>페</em>퍼컷</b> 운동 전</span>
+      <span class="when md-diet"><b><em>다</em>이어트약</b> <span class="full">식전 1~2시간</span><span class="short">식전 1~2시간</span></span>
     </section>
     </div>
 
